@@ -17,7 +17,7 @@ def get_all_files(dir_name):
     all_files = list()
 
     for entry in list_of_file:
-        full_path = os.path.join(dirName, entry)
+        full_path = os.path.join(dir_name, entry)
         # If entry is a directory then get the list of files in this directory 
         if os.path.isdir(full_path):
             all_files = all_files + get_all_files(full_path)
@@ -34,7 +34,7 @@ def load_files(path):
     all_files = []
 
     for each_file in tqdm(filenames, desc="Reading files: "):
-        with open(filename, 'rb') as f:
+        with open(each_file, 'rb') as f:
             file = json.load(f)
         all_files.append(file)
     return all_files
@@ -120,7 +120,7 @@ def generate_clean_df(all_files, metadata):
         if row.empty:
             metadata_not_found += 1
             continue
-        assert len(row) == 1, "Unique file not found"
+
         row = row.iloc[0]
 
         features = [
@@ -134,7 +134,7 @@ def generate_clean_df(all_files, metadata):
             format_body(file['abstract']),
             format_body(file['body_text']),
             row['url'],
-            row['source'],
+            row['source_x'],
             row['license'],
             format_bib(file['bib_entries'])
         ]

@@ -45,7 +45,7 @@ def cache_corpus():
 
     corpus = pd.concat([biorxiv_df, comm_use_df, noncomm_use_df, custom_df], ignore_index=True)
 
-    logging.info(f"Creating corpus by combining: {biorxiv}, {comm_use}, {noncomm_use}, {custom} data")
+    logging.info(f"Creating corpus by combining: biorxiv, comm_use, noncomm_use, custom data")
     with open(CORPUS_PATH, 'wb') as file:
         pickle.dump(corpus, file)
     return corpus
