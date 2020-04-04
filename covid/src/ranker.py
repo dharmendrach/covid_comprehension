@@ -4,7 +4,6 @@ warnings.simplefilter('ignore')
 
 import scipy
 import pandas as pd
-from tabulate import tabulate
 
 def rank_with_bert(query, model, corpus, corpus_embed, top_k=5):
     queries = [query]
@@ -21,10 +20,10 @@ def rank_with_bert(query, model, corpus, corpus_embed, top_k=5):
     return results
 
 
-def show_answers(results):
+def show_ranking_results(results):
     
     cols = ['Rank', 'Score', 'paper_id', 'cord_uid', 'title', 'publish_time', 'authors',
                  'affiliations', 'abstract', 'text', 'url', 'source', 'license']
 
     df = pd.DataFrame(results, columns=cols)
-    print(tabulate(df, headers='keys', tablefmt='fancy_grid', showindex=False))
+    print(df)

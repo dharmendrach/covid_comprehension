@@ -91,10 +91,19 @@ def format_body(body_text):
     return body
 
 
-def generate_clean_df(all_files, metadata, consider_without_abstract=False):
+def generate_clean_df(all_files, metadata, consider_without_mode=False, mode="abstract"):
     cleaned_files = []
     metadata_not_found = 0
-    abstract_not_found = 0
+    mode_not_found = 0
+
+    if mode == "abstract":
+        mode_key = "abstract"
+    elif mode == "text":
+        mode_key == "body_text"
+    elif mode_key == "title":
+        mode_key = "title"
+    else:
+        raise AttributeError("Ranking should be with abstract, text (or) title are only supported")
 
     for file in tqdm(all_files):
         row = metadata.loc[metadata['sha'] == file['paper_id']]
@@ -102,10 +111,13 @@ def generate_clean_df(all_files, metadata, consider_without_abstract=False):
             metadata_not_found += 1
             continue
         
-        abstract = format_body(file['abstract'])
-        if abstract == "":
-            abstract_not_found += 1
-        if consider_without_abstract:
+        if mode == "abstract" or mode == "text":
+            mode_data = format_body(file['abstract'])
+        elif mode == "title":
+            mode_data = file['metadata']['title']
+        if mode_data == "":
+            mode_not_found += 1
+        if consider_without_mode:
             continue
 
         row = row.iloc[0]
