@@ -8,9 +8,6 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-logger = logging.getLogger(__name__)
-
 
 def get_all_files(dir_name):
     list_of_file = os.listdir(dir_name)
@@ -94,31 +91,21 @@ def format_body(body_text):
     return body
 
 
-def format_bib(bibs):
-    if type(bibs) == dict:
-        bibs = list(bibs.values())
-    bibs = deepcopy(bibs)
-    formatted = []
-    
-    for bib in bibs:
-        bib['authors'] = format_authors(
-            bib['authors'], 
-            with_affiliation=False
-        )
-        formatted_ls = [str(bib[k]) for k in ['title', 'authors', 'venue', 'year']]
-        formatted.append(", ".join(formatted_ls))
-
-    return "; ".join(formatted)
-
-
-def generate_clean_df(all_files, metadata):
+def generate_clean_df(all_files, metadata, consider_without_abstract=False):
     cleaned_files = []
     metadata_not_found = 0
+    abstract_not_found = 0
 
     for file in tqdm(all_files):
         row = metadata.loc[metadata['sha'] == file['paper_id']]
         if row.empty:
             metadata_not_found += 1
+            continue
+        
+        abstract = format_body(file['abstract'])
+        if abstract == "":
+            abstract_not_found += 1
+        if consider_without_abstract:
             continue
 
         row = row.iloc[0]
@@ -131,19 +118,20 @@ def generate_clean_df(all_files, metadata):
             format_authors(file['metadata']['authors']),
             format_authors(file['metadata']['authors'], 
                            with_affiliation=True),
-            format_body(file['abstract']),
+            abstract,
             format_body(file['body_text']),
             row['url'],
             row['source_x'],
-            row['license'],
-            format_bib(file['bib_entries'])
+            row['license']
         ]
 
         cleaned_files.append(features)
 
+    logging.info(f"Metadata not found for {metadata_not_found} files")
+    logging.info(f"Abstract is null for {abstract_not_found} files")
+
     col_names = ['paper_id', 'cord_uid', 'title', 'publish_time', 'authors',
-                 'affiliations', 'abstract', 'text', 'url', 'source', 'license',
-                 'bibliography']
+                 'affiliations', 'abstract', 'text', 'url', 'source', 'license']
     clean_df = pd.DataFrame(cleaned_files, columns=col_names)
     clean_df.head()
     

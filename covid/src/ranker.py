@@ -1,15 +1,10 @@
-import textwrap
-import prettytable
 import logging
 import warnings
 warnings.simplefilter('ignore')
 
 import scipy
-
-
-logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-logger = logging.getLogger(__name__)
-
+import pandas as pd
+from tabulate import tabulate
 
 def rank_with_bert(query, model, corpus, corpus_embed, top_k=5):
     queries = [query]
@@ -20,25 +15,16 @@ def rank_with_bert(query, model, corpus, corpus_embed, top_k=5):
         distances = sorted(distances, key=lambda x: x[1])
         results = []
         for count, (idx, distance) in enumerate(distances[0:top_k]):
-            results.append([count + 1, corpus.iloc[idx]['abstract'].strip(), round(1 - distance, 4)])
+            result = [count + 1, round(1 - distance, 4)]
+            result.extend(corpus.iloc[idx].values)
+            results.append(result)
     return results
 
 
 def show_answers(results):
-    table = prettytable.PrettyTable(
-        ['Rank', 'Abstract', 'Score']
-    )
-    for res in results:
-        rank = res[0]
-        text = res[1]
-        text = textwrap.fill(text, width=75)
-        text = text + '\n\n'
-        score = res[2]
-        table.add_row([
-            rank,
-            text,
-            score
-        ])
-    print('\n')
-    print(str(table))
-    print('\n')
+    
+    cols = ['Rank', 'Score', 'paper_id', 'cord_uid', 'title', 'publish_time', 'authors',
+                 'affiliations', 'abstract', 'text', 'url', 'source', 'license']
+
+    df = pd.DataFrame(results, columns=cols)
+    print(tabulate(df, headers='keys', tablefmt='fancy_grid', showindex=False))
