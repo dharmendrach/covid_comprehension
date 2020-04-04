@@ -12,13 +12,28 @@ logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S
 logger = logging.getLogger(__name__)
 
 
+def get_all_files(dir_name):
+    list_of_file = os.listdir(dir_name)
+    all_files = list()
+
+    for entry in list_of_file:
+        full_path = os.path.join(dirName, entry)
+        # If entry is a directory then get the list of files in this directory 
+        if os.path.isdir(full_path):
+            all_files = all_files + get_all_files(full_path)
+        else:
+            if full_path.endswith('json'):
+                all_files.append(full_path)
+
+    return all_files
+
+
 def load_files(path):
-    filenames = os.listdir(path)
+    filenames = get_all_files(path)
     logging.info(f"Number of files retrived from {path}: {len(filenames)}")
     all_files = []
 
     for each_file in tqdm(filenames, desc="Reading files: "):
-        filename = path + each_file
         with open(filename, 'rb') as f:
             file = json.load(f)
         all_files.append(file)
