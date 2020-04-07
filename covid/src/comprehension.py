@@ -1,6 +1,6 @@
 import pandas as pd
 
-N_BEST_PER_PASSAGE = 2
+N_BEST_PER_PASSAGE = 1
 CONTEXT_SIZE = 50
 
 
@@ -60,3 +60,16 @@ def comprehend_with_bert(model, question, documents, top_k=5):
     results = {"question": question,
             "answers": answers}
     return results
+
+
+def show_comprehension_results(results):
+    result = {"answer": [], "context": [], "title": [], "score": [], "doc_rank": [], "doc_score": []}
+    for r in results:
+        result['answer'].append(r['answer'])
+        result['context'].append(r['context'])
+        result['title'].append(r['title'])
+        result['score'].append(r['score'])
+        result['doc_rank'].append(r['doc_rank'])
+        result['doc_score'].append(r['doc_score'])
+    df = pd.DataFrame(result)
+    print(df)

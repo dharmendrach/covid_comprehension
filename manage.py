@@ -14,8 +14,8 @@ from sentence_transformers import SentenceTransformer
 from transformers import pipeline
 
 from covid.utils.process_data import generate_clean_csv
-from covid.src.ranker import rank_with_bert
-from covid.src.comprehension import comprehend_with_bert
+from covid.src.ranker import rank_with_bert, show_ranking_results
+from covid.src.comprehension import comprehend_with_bert, show_comprehension_results
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.DEBUG)
 
@@ -92,6 +92,6 @@ if __name__ == '__main__':
         query = input('\nAsk your question: ')
         rank_results = rank_with_bert(query, model, corpus, embeddings)
         comprehend_results = comprehend_with_bert(comprehension_model, query, rank_results)
-        print(rank_results)
+        show_ranking_results(rank_results)
         print('*' * 100)
-        print(comprehend_results)
+        show_comprehension_results(comprehend_results["answers"])
