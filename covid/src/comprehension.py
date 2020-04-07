@@ -50,8 +50,8 @@ def comprehend_with_bert(model, question, documents, top_k=5):
             each_answer['url'] = document['url']
             each_answer['source'] = document['source']
             each_answer['license'] = document['license']
-            each_answer['document_rank'] = document['Rank']
-            each_answer['document_rank_score'] = document['Score']
+            each_answer['document_rank'] = document['rank']
+            each_answer['document_rank_score'] = document['score']
             answers.append(each_answer)
     answers = sorted(
         answers, key=lambda k: k["probability"], reverse=True
@@ -60,13 +60,3 @@ def comprehend_with_bert(model, question, documents, top_k=5):
     results = {"question": question,
             "answers": answers}
     return results
-
-
-def show_comprehension_results(results):
-
-    cols = ['answer', 'context', 'offset_answer_start', 'offset_answer_end', 'probability', 'paper_id', 'cord_uid',
-            'title', 'publish_time', 'authors', 'affiliations', 'abstract', 'text', 'url', 'source', 'license',
-            'document_rank', 'document_rank_score']
-
-    df = pd.DataFrame(results, columns=cols)
-    print(df)

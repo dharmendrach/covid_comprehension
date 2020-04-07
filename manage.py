@@ -14,8 +14,8 @@ from sentence_transformers import SentenceTransformer
 from transformers import pipeline
 
 from covid.utils.process_data import generate_clean_csv
-from covid.src.ranker import rank_with_bert, show_ranking_results
-from covid.src.comprehension import comprehend_with_bert, show_comprehension_results
+from covid.src.ranker import rank_with_bert
+from covid.src.comprehension import comprehend_with_bert
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.DEBUG)
 
@@ -31,8 +31,8 @@ RANK_MODE = 'bert'
 RANK_USING = 'abstract'
 MODEL_NAME = 'scibert-nli'
 COMPREHENSION_MODEL="distilbert-base-uncased-distilled-squad"
-COMPREHENSION_TOKENIZER="bert-base-uncased"
-USE_GPU = 'cuda' if torch.cuda.is_available() else 'cpu'
+COMPREHENSION_TOKENIZER="distilbert-base-uncased"
+use_gpu = -1
 CORPUS_PATH = os.path.join(DATA_PATH, 'corpus.pkl')
 MODEL_PATH = os.path.join(MODELS_PATH, MODEL_NAME)
 EMBEDDINGS_PATH = os.path.join(DATA_PATH, f'{MODEL_NAME}-{RANK_USING}-embeddings.pkl')
@@ -92,6 +92,6 @@ if __name__ == '__main__':
         query = input('\nAsk your question: ')
         rank_results = rank_with_bert(query, model, corpus, embeddings)
         comprehend_results = comprehend_with_bert(comprehension_model, query, rank_results)
-        show_ranking_results(rank_results)
+        print(rank_results)
         print('*' * 100)
-        show_comprehension_answers(comprehend_results)
+        print(comprehend_results)

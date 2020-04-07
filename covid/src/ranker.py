@@ -14,16 +14,20 @@ def rank_with_bert(query, model, corpus, corpus_embed, top_k=5):
         distances = sorted(distances, key=lambda x: x[1])
         results = []
         for count, (idx, distance) in enumerate(distances[0:top_k]):
-            result = [count + 1, round(1 - distance, 4)]
-            result.extend(corpus.iloc[idx].values)
+            doc = corpus.iloc[idx]
+            result = {}
+            result['rank'] = count + 1
+            result['score'] = round(1 - distance, 4)
+            result['paper_id'] = doc['paper_id']
+            result['cord_uid'] = doc['cord_uid']
+            result['title'] = doc['title']
+            result['publish_time'] = doc['publish_time']
+            result['authors'] = doc['authors']
+            result['affiliations'] = doc['affiliations']
+            result['abstract'] = doc['abstract']
+            result['text'] = doc['text']
+            result['url'] = doc['url']
+            result['source'] = doc['source']
+            result['license'] = doc['license']
             results.append(result)
     return results
-
-
-def show_ranking_results(results):
-    
-    cols = ['Rank', 'Score', 'paper_id', 'cord_uid', 'title', 'publish_time', 'authors',
-                 'affiliations', 'abstract', 'text', 'url', 'source', 'license']
-
-    df = pd.DataFrame(results, columns=cols)
-    print(df)
