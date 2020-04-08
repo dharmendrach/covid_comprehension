@@ -36,9 +36,9 @@ def rank_with_bert(query, model, corpus, corpus_embed, top_k=5):
 def show_ranking_results(results):
     result = {"title": [], "doc_rank": [], "doc_score": [], "abstract": []}
     for r in results:
-        result['answer'].append(r['answer'])
-        result['doc_rank'].append(r['doc_rank'])
-        result['doc_score'].append(r['doc_score'])
+        result['title'].append(r['title'])
+        result['doc_rank'].append(r['rank'])
+        result['doc_score'].append(r['score'])
         result['abstract'].append(r['abstract'])
     df = pd.DataFrame(result)
     print(df)

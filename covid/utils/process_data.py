@@ -150,10 +150,10 @@ def generate_clean_df(all_files, metadata, consider_without_mode=False, mode="ab
     return clean_df
 
 
-def generate_clean_csv(datapath, metadata_path, source, datafolder):
+def generate_clean_csv(datapath, metadata_path, source, datafolder, mode):
     files = load_files(datapath)
     metadata = pd.read_csv(metadata_path)
-    clean_df = generate_clean_df(files, metadata)
+    clean_df = generate_clean_df(files, metadata, mode)
     logging.info(f"Saving the cleaned data into file: {datafolder}/clean_{source}.csv")
     clean_df.to_csv(f'{datafolder}/clean_{source}.csv', index=False)
     return clean_df

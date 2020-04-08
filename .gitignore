@@ -131,6 +131,6 @@ dmypy.json
 
 # PyCharm
 .idea
-
+.vscode
 
 .DS_Store

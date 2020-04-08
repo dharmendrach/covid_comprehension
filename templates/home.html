@@ -1,0 +1,125 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<script>
+    $(document).ready(function() {
+        $("#queryForm").submit(function(e) {
+            e.preventDefault();
+            // e.stopPropagation(); 
+            var query = $("#query").val();
+            $.ajax('/query', {
+                type: 'post',
+                contentType: 'application/json',
+                data: JSON.stringify({"query": query}),
+                dataType: 'json',
+                success: function(response) {
+                    results = response.response
+                    var resultCards = $();
+                    results.forEach(function(item, i) {
+                        var card = createCard(item, i);
+                        resultCards = resultCards.add(card);
+                    });
+                    $(function() {
+                        $('#comprehend_results').append(resultCards);
+                    })
+                },
+                error: function(xhr, ajaxOptions, thrownError){
+                    alert(xhr.responseText);
+                    alert(thrownError);
+                }
+          });
+      });
+
+      function createCard(cardData, i){
+          var cardTemplate = [
+            '<div class="ui raised card link segment">',
+                '<div class="content">',
+                    '<i class="right floated">confidence: ', cardData.probability, '</i>',
+                    '<div class="header"><a href="', cardData.url, '" target="_blank">', cardData.title, '</a></div>',
+                    '<div class="meta">',
+                        '<span>', cardData.published_date, '</span>',
+                        '<a>', cardData.license, '</a>',
+                    '</div>',
+                    '<div class="description">',
+                        '<p>', cardData.text, '</p>',
+                    '</div>',
+                '</div>',
+                '<div class="extra content">',
+                    '<span class="right floated">',
+                        '<a class="content_modal" id="', i.toString() ,'">Show Content</a>',
+                    '</span>',
+                    '<span>',
+                    '<a class="abstract_modal" id="', i.toString() ,'">Show Abstract</a>',
+                    '</span>',
+                '</div>',
+            '</div>',
+            '<div class="ui longer modal" id="abstract_', i.toString() ,'">',
+                '<div class="header">Abstract</div>',
+                    '<div class="scrolling content">',
+                    '<p>', cardData.abstract ,'</p>',
+                '</div>',
+            '</div>',
+            '<div class="ui longer modal" id="content_', i.toString() ,'">',
+                '<div class="header">Content</div>',
+                    '<div class="scrolling content">',
+                    '<p>', cardData.text ,'</p>',
+                '</div>',
+            '</div>'
+          ];
+          return $(cardTemplate.join(''));
+      }
+
+    });
+
+    $(document).on("click", "a.abstract_modal", function(){
+        var id = $(this).attr('id');
+        $('#abstract_' + id).modal('show');
+    });
+
+    $(document).on("click", "a.content_modal", function(){
+        var id = $(this).attr('id');
+        $('#content_' + id).modal('show');
+    });
+</script>
+
+<div class="ui segments">
+    <div class="ui segment">
+        <form class="ui form" id="queryForm">
+            <div class="field">
+                <div class="ui icon input">
+                    <input id="query" type="text" placeholder="Search...">
+                    <i class="search icon"></i>
+                  </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="ui text container">
+    <div class="ui segments" id="comprehend_results">
+        {% for result in results %}
+        <div class="ui raised card link segment">
+            <div class="content">
+                <i class="right floated"> {{result.probability}}</i>
+                <div class="header"><a href="{{result.url}}">{{result.title}}</a></div>
+                <div class="meta">
+                    <span>{{result.published_date}}</span>
+                    <a>{{result.license}}</a>
+                  </div>
+                <div class="description">
+                    <p>{{result.text}}</p>
+                </div>
+            </div>
+            <div class="extra content">
+                <span class="right floated">
+                    <a>Show Content</a>
+                </span>
+                <span>
+                  <a>Show Abstract</a>
+                </span>
+              </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
