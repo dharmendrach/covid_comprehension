@@ -88,7 +88,6 @@ else:
 comprehension_model = pipeline("question-answering", model=COMPREHENSION_MODEL, tokenizer=COMPREHENSION_TOKENIZER, device=use_gpu)
 
 
-
 class QueryRequest(BaseModel):
     query: str
 

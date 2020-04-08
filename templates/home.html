@@ -5,6 +5,7 @@
     $(document).ready(function() {
         $("#queryForm").submit(function(e) {
             e.preventDefault();
+            $('#spinner').show();
             // e.stopPropagation(); 
             var query = $("#query").val();
             $.ajax('/query', {
@@ -13,7 +14,9 @@
                 data: JSON.stringify({"query": query}),
                 dataType: 'json',
                 success: function(response) {
+                    $('#spinner').hide()
                     results = response.response.answers
+                    // results = response.response
                     var resultCards = $();
                     results.forEach(function(item, i) {
                         var card = createCard(item, i);
@@ -80,6 +83,7 @@
         var id = $(this).attr('id');
         $('#content_' + id).modal('show');
     });
+
 </script>
 
 <div class="ui segments">
@@ -95,31 +99,16 @@
     </div>
 </div>
 
-<div class="ui container">
-    <div class="ui segments" id="comprehend_results">
-        {% for result in results %}
-        <div class="ui raised card link segment">
-            <div class="content">
-                <i class="right floated"> {{result.probability}}</i>
-                <div class="header"><a href="{{result.url}}">{{result.title}}</a></div>
-                <div class="meta">
-                    <span>{{result.published_date}}</span>
-                    <a>{{result.license}}</a>
-                  </div>
-                <div class="description">
-                    <p>{{result.text}}</p>
-                </div>
-            </div>
-            <div class="extra content">
-                <span class="right floated">
-                    <a>Show Content</a>
-                </span>
-                <span>
-                  <a>Show Abstract</a>
-                </span>
-              </div>
+<div class="ui center aligned header" id="spinner" style="display: none;">
+    <div class="ui center aligned">
+        <div class="ui icon input loading">
+            <i class="search icon"></i>
         </div>
-        {% endfor %}
     </div>
 </div>
+
+<div class="ui segments" id="comprehend_results">
+
+</div>
+
 {% endblock %}

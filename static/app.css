@@ -1,11 +1,15 @@
 body {
     background-color: #F4F6F6;
 }
-div.ui.header {
+#title {
     background-color: #2E4053;
 }
 h2.ui.center.header {
     padding-top: 1em;
     padding-bottom: 0.5em;
     color: white;
+}
+
+#spinner {
+    margin-top: 5em;
 }
