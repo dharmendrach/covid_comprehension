@@ -34,17 +34,35 @@
       });
 
       function createCard(cardData, i){
+          var context = ""
+          if (cardData.context.length > 520){
+            context = [cardData.context.substr(0, 520), 
+                        '...',
+                        '<a class="context_modal" id="' + i.toString() + '">show more</a>'];
+            context = context.join('');
+            console.log(context);
+            console.log("context loop")
+          } else {
+              context = cardData.context;
+          }
+
+          var title = "";
+          if (cardData.title){
+              title = cardData.title;
+          } else {
+              title = "Paper Link"
+          }
           var cardTemplate = [
             '<div class="ui raised card link segment">',
                 '<div class="content">',
                     '<i class="right floated">confidence: ', cardData.probability, '</i>',
-                    '<div class="header"><a href="', cardData.url, '" target="_blank">', cardData.title, '</a></div>',
+                    '<div class="header"><a href="', cardData.url, '" target="_blank">', title, '</a></div>',
                     '<div class="meta">',
-                        '<span>', cardData.publish_time, '</span>',
-                        '<a>', cardData.license, '</a>',
+                        '<span>Published: ', cardData.publish_time, '</span>',
+                        '<a> License: ', cardData.license, '</a>',
                     '</div>',
                     '<div class="description">',
-                        '<p>', cardData.context, '</p>',
+                        '<span class="more">', context, '</span>',
                     '</div>',
                 '</div>',
                 '<div class="extra content">',
@@ -67,6 +85,12 @@
                     '<div class="scrolling content">',
                     '<p>', cardData.text ,'</p>',
                 '</div>',
+            '</div>',
+            '<div class="ui longer modal" id="context_', i.toString() ,'">',
+                '<div class="header">Answer</div>',
+                    '<div class="scrolling content">',
+                    '<p>', cardData.context ,'</p>',
+                '</div>',
             '</div>'
           ];
           return $(cardTemplate.join(''));
@@ -84,6 +108,10 @@
         $('#content_' + id).modal('show');
     });
 
+    $(document).on("click", "a.context_modal", function(){
+        var id = $(this).attr('id');
+        $('#context_' + id).modal('show');
+    });
 </script>
 
 <div class="ui segments">
