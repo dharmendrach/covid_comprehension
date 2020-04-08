@@ -11,20 +11,20 @@ def result_on_one_document(model, question, document, top_k=3):
     answers = []
     for p in paragraphs:
         query = {"context": p, "question": question}
-        predictions = model(query, topk=N_BEST_PER_PASSAGE)
+        pred = model(query, topk=N_BEST_PER_PASSAGE)
         # assemble and format all answers
-        for pred in predictions:
-            if pred["answer"]:
-                # context_start = max(0, pred["start"] - CONTEXT_SIZE)
-                # context_end = min(len(p), pred["end"] + CONTEXT_SIZE)
-                answers.append({
-                    "answer": pred["answer"],
-                    "context": p,
-                    "offset_answer_start": pred["start"],
-                    "offset_answer_end": pred["end"],
-                    "probability": pred["score"],
-                    "paper_id": document['paper_id']
-                })
+        # for pred in predictions:
+        if pred["answer"]:
+            # context_start = max(0, pred["start"] - CONTEXT_SIZE)
+            # context_end = min(len(p), pred["end"] + CONTEXT_SIZE)
+            answers.append({
+                "answer": pred["answer"],
+                "context": p,
+                "offset_answer_start": pred["start"],
+                "offset_answer_end": pred["end"],
+                "probability": round(pred["score"], 4),
+                "paper_id": document['paper_id']
+            })
 
     # sort answers by their `probability` and select top-k
     answers = sorted(
@@ -57,8 +57,7 @@ def comprehend_with_bert(model, question, documents, top_k=5):
         answers, key=lambda k: k["probability"], reverse=True
     )
     answers = answers[:top_k]
-    results = {"question": question,
-            "answers": answers}
+    results = {"question": question, "answers": answers}
     return results
 
 

@@ -13,7 +13,7 @@
                 data: JSON.stringify({"query": query}),
                 dataType: 'json',
                 success: function(response) {
-                    results = response.response
+                    results = response.response.answers
                     var resultCards = $();
                     results.forEach(function(item, i) {
                         var card = createCard(item, i);
@@ -37,11 +37,11 @@
                     '<i class="right floated">confidence: ', cardData.probability, '</i>',
                     '<div class="header"><a href="', cardData.url, '" target="_blank">', cardData.title, '</a></div>',
                     '<div class="meta">',
-                        '<span>', cardData.published_date, '</span>',
+                        '<span>', cardData.publish_time, '</span>',
                         '<a>', cardData.license, '</a>',
                     '</div>',
                     '<div class="description">',
-                        '<p>', cardData.text, '</p>',
+                        '<p>', cardData.context, '</p>',
                     '</div>',
                 '</div>',
                 '<div class="extra content">',
@@ -95,7 +95,7 @@
     </div>
 </div>
 
-<div class="ui text container">
+<div class="ui container">
     <div class="ui segments" id="comprehend_results">
         {% for result in results %}
         <div class="ui raised card link segment">
