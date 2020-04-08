@@ -69,7 +69,7 @@ def show_comprehension_results(results):
         result['context'].append(r['context'])
         result['title'].append(r['title'])
         result['score'].append(r['probability'])
-        result['doc_rank'].append(r['doc_rank'])
+        result['doc_rank'].append(r['document_rank'])
         result['doc_score'].append(r['document_rank_score'])
     df = pd.DataFrame(result)
     print(df)
