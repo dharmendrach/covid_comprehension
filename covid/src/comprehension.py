@@ -4,6 +4,34 @@ N_BEST_PER_PASSAGE = 1
 CONTEXT_SIZE = 50
 
 
+def result_on_one_paragraph(model, question, paragraph, top_k=3):
+
+    answers = []
+    query = {"context": paragraph["para"], "question": question}
+    pred = model(query, topk=N_BEST_PER_PASSAGE)
+    # assemble and format all answers
+    # for pred in predictions:
+    if pred["answer"]:
+        # context_start = max(0, pred["start"] - CONTEXT_SIZE)
+        # context_end = min(len(p), pred["end"] + CONTEXT_SIZE)
+        answers.append({
+            "answer": pred["answer"],
+            "context": paragraph["para"],
+            "offset_answer_start": pred["start"],
+            "offset_answer_end": pred["end"],
+            "probability": round(pred["score"], 4),
+            "paper_id": paragraph['paper_id']
+        })
+
+    # sort answers by their `probability` and select top-k
+    answers = sorted(
+        answers, key=lambda k: k["probability"], reverse=True
+    )
+    answers = answers[:top_k]
+
+    return answers
+
+
 def result_on_one_document(model, question, document, top_k=3):
     paragraphs = document["text"].split('\n\n')
     paragraphs = [para for para in paragraphs if len(para) > 0]
@@ -38,7 +66,8 @@ def result_on_one_document(model, question, document, top_k=3):
 def comprehend_with_bert(model, question, documents, top_k=5):
     answers = []
     for document in documents:
-        doc_answers = result_on_one_document(model, question, document)
+        # doc_answers = result_on_one_document(model, question, document)
+        doc_answers = result_on_one_paragraph(model, question, document)
         for each_answer in doc_answers:
             each_answer['cord_uid'] = document['cord_uid']
             each_answer['title'] = document['title']

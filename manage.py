@@ -14,7 +14,7 @@ from sentence_transformers import SentenceTransformer
 from transformers import pipeline
 
 from covid.utils.process_data import generate_clean_csv
-from covid.src.ranker import rank_with_bert, show_ranking_results
+from covid.src.ranker import rank_with_bert, show_ranking_results, paragraph_ranking
 from covid.src.comprehension import comprehend_with_bert, show_comprehension_results
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.DEBUG)
@@ -86,12 +86,14 @@ if __name__ == '__main__':
         with open(EMBEDDINGS_PATH, 'rb') as file:
             embeddings = pickle.load(file)
 
-
     comprehension_model = pipeline("question-answering", model=COMPREHENSION_MODEL, tokenizer=COMPREHENSION_TOKENIZER, device=use_gpu)
+
     while True:
         query = input('\nAsk your question: ')
         rank_results = rank_with_bert(query, model, corpus, embeddings)
-        comprehend_results = comprehend_with_bert(comprehension_model, query, rank_results)
+        paragraphs = paragraph_ranking(query, model, rank_results)
+        # comprehend_results = comprehend_with_bert(comprehension_model, query, rank_results)
+        comprehend_results = comprehend_with_bert(comprehension_model, query, paragraphs)
         show_ranking_results(rank_results)
         print('*' * 100)
         show_comprehension_results(comprehend_results["answers"])
