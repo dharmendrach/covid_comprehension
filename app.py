@@ -12,7 +12,7 @@ from sentence_transformers import SentenceTransformer
 from transformers import pipeline
 
 from covid.utils.process_data import generate_clean_csv
-from covid.src.ranker import rank_with_bert
+from covid.src.ranker import rank_with_bert, paragraph_ranking
 from covid.src.comprehension import comprehend_with_bert
 
 app = FastAPI()
@@ -105,8 +105,12 @@ def home(request: Request):
 @app.post("/query")
 def post_query(request: Request, query_request: QueryRequest):
     query = query_request.query
+
     rank_results = rank_with_bert(query, model, corpus, embeddings)
-    comprehend_results = comprehend_with_bert(comprehension_model, query, rank_results)
+    paragraphs = paragraph_ranking(query, model, rank_results)
+    # comprehend_results = comprehend_with_bert(comprehension_model, query, rank_results)
+    comprehend_results = comprehend_with_bert(comprehension_model, query, paragraphs)
+
     # comprehend_results = []
     # each_answer = {}
     # each_answer['query'] = query

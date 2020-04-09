@@ -10,9 +10,9 @@ def paragraph_ranking(query, model, documents, top_k=15):
     for each_doc in documents:
         paras = each_doc['text'].split('\n\n')
         paras = [para for para in paras if len(para) > 0]
-        para_embeds = model.encode(paras)
-        query_embed = model.encode([query])
-        distances = scipy.spatial.distance.cdist([query_embed], para_embeds, "cosine")[0]
+        para_embeds = model.encode(paras, show_progress_bar=False)
+        query_embed = model.encode([query], show_progress_bar=False)
+        distances = scipy.spatial.distance.cdist(query_embed, para_embeds, "cosine")[0]
         for para_idx, para_score in enumerate(distances):
             result = {}
             result['para'] = paras[para_idx]
