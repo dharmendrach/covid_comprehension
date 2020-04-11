@@ -47,8 +47,8 @@
         for (var i=0; i<cardData.comprehension.length; i++) {
             var highlighted_answer = "";
             var para = cardData.comprehension[i].context;
-            var answer_start = cardData.comprehension[i].answer_start;
-            var answer_end = cardData.comprehension[i].answer_end;
+            var answer_start = cardData.comprehension[i].offset_answer_start;
+            var answer_end = cardData.comprehension[i].offset_answer_end;
             var intial_part = para.substr(0, answer_start);
             var highlighted_part = para.substr(answer_start, answer_end - 1);
             var rest_part = para.substr(answer_end, para.length);
@@ -119,11 +119,13 @@
                                     'Source:', cardData.source,
                                 '</div>',
                             '</div>',
-                            '<div class="row">',
-                                '<div class="column">',
-                                    'Authors:', cardData.authors,
-                                '</div>',
+                        '</div>',
+                        '<div class="ui stackable one column divided grid container">',
+                        '<div class="row">',
+                            '<div class="column">',
+                                'Authors:', cardData.authors,
                             '</div>',
+                        '</div>',
                         '</div>',
                     '</div>',
                     '<div class="ui divider"></div>',
@@ -132,7 +134,7 @@
                     '</div>',
                     '<div class="extra content">',
                         '<span>',
-                            '<a>Affiliations:', cardData.affiliations ,'</a>',
+                            'Affiliations: <a>', cardData.affiliations ,'</a>',
                         '</span>',
                     '</div>',
                 '</div>',

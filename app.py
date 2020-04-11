@@ -162,7 +162,7 @@ def post_query(request: Request, query_request: QueryRequest):
     #     ],
     #     "cord_uid": 123,
     #     "publish_time": '20-20-2020',
-    #     "authors": "ravi raja",
+    #     "authors": "1 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     #     "affiliations": "Infosys bangalore",
     #     "abstract": "this is the abstract of the document",
     #     "url": "http://google.com",

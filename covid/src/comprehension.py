@@ -3,11 +3,12 @@ import pandas as pd
 N_BEST_PER_PASSAGE = 1
 
 
-def result_on_one_document(model, question, document, top_k=3):
+def result_on_one_document(model, question, document, top_k=5):
     paragraphs = document["paragraphs"]
+    paragraph_rank_results = document["paragraph_ranking"]
     answers = []
-    for para_idx, para in enumerate(paragraphs):
-        query = {"context": para, "question": question}
+    for idx, para in enumerate(paragraph_rank_results):
+        query = {"context": paragraphs[para.paragraph_id], "question": question}
         pred = model(query, topk=N_BEST_PER_PASSAGE)
         # assemble and format all answers
         # for pred in predictions:
@@ -18,7 +19,7 @@ def result_on_one_document(model, question, document, top_k=3):
                 "offset_answer_start": pred["start"],
                 "offset_answer_end": pred["end"],
                 "probability": round(pred["score"], 4),
-                "paragraph_id": para_idx
+                "paragraph_id": para.paragraph_id
             })
 
     # sort answers by their `probability` and select top-k
@@ -30,13 +31,12 @@ def result_on_one_document(model, question, document, top_k=3):
     return document
 
 
-def comprehend_with_bert(model, question, documents, top_k=5):
+def comprehend_with_bert(model, question, documents):
     comprehend_results = []
     for document in documents:
         result = result_on_one_document(model, question, document)
         comprehend_results.append(result)
-    results = {"question": question, "results": comprehend_results}
-    return results
+    return comprehend_results
 
 
 def show_comprehension_results(results):

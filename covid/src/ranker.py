@@ -5,7 +5,7 @@ import pandas as pd
 warnings.simplefilter('ignore')
 
 
-def paragraph_ranking(query, model, documents, top_k=15):
+def paragraph_ranking(query, model, documents, top_k=5):
     for each_doc in documents:
         paras = each_doc["paragraphs"]
         para_embeds = model.encode(paras, show_progress_bar=False)
