@@ -51,11 +51,8 @@
                         $("#comp_results").children().hide();
                         $('#doc_results').children().first().children().first().attr('id', "selectedcard");
                         $("#comp_results").children().first().show();
+                        firstElementHightlight();
                     });
-                    $('html, body').animate({
-                        scrollTop: $("#top").offset().top
-                    },1000);
-                    
                 },
                 error: function(xhr, ajaxOptions, thrownError){
                     alert(xhr.responseText);
@@ -76,7 +73,11 @@
             var rest_part = para.substr(answer_end, para.length);
             highlighted_answer += intial_part;
             if (cardData.comprehension[i].probability > 0.5) {
-                highlighted_answer += '<span style="background-color: #ABEBC6;" >' + highlighted_part + '</span>';
+                if (i == 0){
+                    highlighted_answer += '<span style="background-color: #ABEBC6;" id="top">' + highlighted_part + '</span>';
+                } else {
+                    highlighted_answer += '<span style="background-color: #ABEBC6;" >' + highlighted_part + '</span>';
+                }
             } else if (cardData.comprehension[i].probability < 0.5 && cardData.comprehension[i].probability > 0.3){
                 highlighted_answer += '<span style="background-color: #afdce3;">' + highlighted_part + '</span>';
             } else {
@@ -133,7 +134,7 @@
                             '<a class="abstract_modal" id="', idx.toString() ,'">Show Abstract</a>',
                         '</span>',
                         '<span class="right floated">',
-                            '<a class="content_modal" id="', i.toString() ,'">Show Content</a>',
+                            '<a class="content_modal" id="', idx.toString() ,'">Show Content</a>',
                         '</span>',
                     '</div>',
                     '<div class="extra content">',
@@ -231,13 +232,28 @@
         $('#context_' + id).modal('show');
     });
 
-    $(document).on("click", "div.column.document", function(){
+    $(document).on("click", "div.column.document", function(e){
+        e.preventDefault();
         var id = $(this).attr('id');
         $("#comp_results").children().hide();
         $('#comprehension_' + id).show();
         $('div.ui.raised.card.link.doc').removeAttr('id');
         $(this).children().first().attr('id', "selectedcard");
+        var $ele = $('#comprehension_' + id).find('#top');
+        goToByScroll($ele);
     });
+
+    function goToByScroll(ele){
+        $('html,body').animate({
+            scrollTop: $(ele).offset().top},
+            'slow');
+    }
+
+    function firstElementHightlight(){
+        var $ele = $('#comprehension_0').find('#top');
+        goToByScroll($ele);
+    }
+
 
 </script>
 
@@ -256,13 +272,11 @@
 
 
 <div class="ui segment" id="spinner" style="display: none;">
-    <br>
-    <br>
     <div class="ui active inverted dimmer">
-      <div class="ui medium text loader" id="spinnerText">
-        <div id="quote1"><span class="quote">Loading {{num_docs}} documents...</span></div>
-        <div id="quote2">Ranking {{num_docs}} documents...</div>
-        <div id="quote3">Comprehending {{num_docs}} documents...</div>
+      <div class="ui huge text loader" id="spinnerText">
+        <div id="quote1"><span class="quote" style="color: #884EA0;">Loading <b>{{num_docs}}</b> documents...</span></div>
+        <div id="quote2" style="color: #E67E22;">Ranking <b>{{num_docs}} </b> documents...</div>
+        <div id="quote3" style="color: #3498DB;">Comprehending <b> {{num_docs}} </b> documents...</div>
       </div>
     </div>
     <p></p>
