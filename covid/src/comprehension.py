@@ -8,18 +8,19 @@ def result_on_one_document(model, question, document, top_k=5):
     paragraph_rank_results = document["paragraph_ranking"]
     answers = []
     for idx, para in enumerate(paragraph_rank_results):
-        query = {"context": paragraphs[para.paragraph_id], "question": question}
+        para_idx = para["paragraph_id"]
+        query = {"context": paragraphs[para_idx], "question": question}
         pred = model(query, topk=N_BEST_PER_PASSAGE)
         # assemble and format all answers
         # for pred in predictions:
         if pred["answer"]:
             answers.append({
                 "answer": pred["answer"],
-                "context": para,
+                "context": paragraphs[para_idx],
                 "offset_answer_start": pred["start"],
                 "offset_answer_end": pred["end"],
                 "probability": round(pred["score"], 4),
-                "paragraph_id": para.paragraph_id
+                "paragraph_id": para_idx
             })
 
     # sort answers by their `probability` and select top-k

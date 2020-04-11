@@ -14,7 +14,7 @@ def paragraph_ranking(query, model, documents, top_k=5):
         paragraph_ranking = []
         for para_idx, para_score in enumerate(distances):
             result = {}
-            result['paragraph_id'] = paras[para_idx]
+            result['paragraph_id'] = para_idx
             result['paragraph_score'] = round(1 - para_score, 4)
             paragraph_ranking.append(result)
         sorted_paras = sorted(paragraph_ranking, key=lambda x: x['paragraph_score'], reverse=True)
