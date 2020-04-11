@@ -107,8 +107,11 @@ def home(request: Request):
     """
     displays the stock screener dashboard / homepage
     """
+    num_docs = len(rank_corpus)
+    # num_docs = 10
     return templates.TemplateResponse("home.html", {
-        "request": request
+        "request": request,
+        "num_docs": num_docs
     })
 
 
@@ -123,10 +126,11 @@ def post_query(request: Request, query_request: QueryRequest):
     # comprehend_results = []
     # each_answer = {
     #     "title": "title of the document",
-    #     "document_score": 0.5,
+    #     "document_score": 0.7,
     #     "document_rank": 1,
     #     "paragraphs": [
-    #         "0 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    #         'Sachin Ramesh Tendulkar (/ˌsʌtʃɪn tɛnˈduːlkər/ (About this soundlisten); born 24 April 1973) is an Indian former international cricketer and a former captain of the Indian national team. He is widely regarded as one of the greatest batsmen in the history of cricket.[4] He is the highest run scorer of all time in International cricket. Tendulkar took up cricket at the age of eleven, made his Test debut on 15 November 1989 against Pakistan in Karachi at the age of sixteen, and went on to represent Mumbai domestically and India internationally for close to twenty-four years. He is the only player to have scored one hundred international centuries, the first batsman to score a double century in a One Day International (ODI), the holder of the record for the most runs in both Test and ODI, and the only player to complete more than 30,000 runs in international cricket.[5] He is colloquially known as Little Master or Master Blaster,[6][7][8][9] In 2001, Sachin Tendulkar became the first batsman to complete 10,000 ODI runs in his 259 innings.[10] In 2002, halfway through his career, Wisden Cricketers Almanack ranked him the second greatest Test batsman of all time, behind Don Bradman, and the second greatest ODI batsman of all time, behind Viv Richards.[11] Later in his career, Tendulkar was a part of the Indian team that won the 2011 World Cup, his first win in six World Cup appearances for India.[12] He had previously been named Player of the Tournament at the 2003 edition of the tournament, held in South Africa. In 2013, he was the only Indian cricketer included in an all-time Test World XI named to mark the 150th anniversary of Wisden Cricketers Almanack.[13][14][15] Tendulkar received the Arjuna Award in 1994 for his outstanding sporting achievement, the Rajiv Gandhi Khel Ratna award in 1997, Indias highest sporting honour, and the Padma Shri and Padma Vibhushan awards in 1999 and 2008, respectively, Indias fourth and second highest civilian awards.[16] After a few hours of his final match on 16 November 2013, the Prime Ministers Office announced the decision to award him the Bharat Ratna, Indias highest civilian award.[17][18] He is the youngest recipient to date and the first ever sportsperson to receive the award.[19][20] He also won the 2010 Sir Garfield Sobers Trophy for cricketer of the year at the ICC awards.[21] In 2012, Tendulkar was nominated to the Rajya Sabha, the upper house of the Parliament of India.[22] He was also the first sportsperson and the first person without an aviation background to be awarded the honorary rank of group captain by the Indian Air Force.[23] In 2012, he was named an Honorary Member of the Order of Australia.[24][25]',
+    #         # "0 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     #         "1 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     #         "2 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     #         "3 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
@@ -147,17 +151,17 @@ def post_query(request: Request, query_request: QueryRequest):
     #             "answer": "Lorem ipsum",
     #             "context": "3 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     #             "paragraph_id": 3,
-    #             "probability": 0.23,
-    #             "answer_start": 2,
-    #             "answer_end": 13
+    #             "probability": 0.6,
+    #             "offset_answer_start": 2,
+    #             "offset_answer_end": 13
     #         },
     #         {
     #             "answer": "Lorem",
     #             "context": "1 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     #             "paragraph_id": 1,
-    #             "probability": 0.13,
-    #             "answer_start": 2,
-    #             "answer_end": 7
+    #             "probability": 0.33,
+    #             "offset_answer_start": 2,
+    #             "offset_answer_end": 7
     #         }
     #     ],
     #     "cord_uid": 123,
@@ -172,6 +176,7 @@ def post_query(request: Request, query_request: QueryRequest):
 
     # comprehend_results.append(each_answer)
     # each_answer2 = each_answer.copy()
+    # each_answer2["document_score"] = 0.23
     # each_answer2["title"] = "title 2"
     # comprehend_results.append(each_answer2)
     results = {

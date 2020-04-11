@@ -6,6 +6,25 @@
         $("#queryForm").submit(function(e) {
             e.preventDefault();
             $('#spinner').show();
+
+            jQuery(function () {
+                var $els = $('div[id^=quote]'),
+                i = 0;
+                len = $els.length;
+                $els.slice(1).hide();
+                $els.eq(i).fadeIn();
+                var id = setInterval(frame, 5000);
+                function frame() {
+                    if (i + 1 == len) {
+                        clearInterval(id);
+                    } else {
+                        $els.eq(i).fadeOut();
+                        i++; 
+                        $els.eq(i).fadeIn();
+                    }
+                }
+            });
+
             $('#doc_results').empty();
             $('#comp_results').empty();
             // e.stopPropagation(); 
@@ -32,8 +51,11 @@
                         $("#comp_results").children().hide();
                         $('#doc_results').children().first().children().first().attr('id', "selectedcard");
                         $("#comp_results").children().first().show();
-
                     });
+                    $('html, body').animate({
+                        scrollTop: $("#top").offset().top
+                    },1000);
+                    
                 },
                 error: function(xhr, ajaxOptions, thrownError){
                     alert(xhr.responseText);
@@ -43,7 +65,7 @@
       });
 
     function createCard(cardData, idx){
-        var context = [];
+        var context = cardData.paragraphs;
         for (var i=0; i<cardData.comprehension.length; i++) {
             var highlighted_answer = "";
             var para = cardData.comprehension[i].context;
@@ -53,18 +75,25 @@
             var highlighted_part = para.substr(answer_start, answer_end - 1);
             var rest_part = para.substr(answer_end, para.length);
             highlighted_answer += intial_part;
-            highlighted_answer += '<span style="background-color: #afdce3;">' + highlighted_part + '</span>',
+            if (cardData.comprehension[i].probability > 0.5) {
+                highlighted_answer += '<span style="background-color: #ABEBC6;" >' + highlighted_part + '</span>';
+            } else if (cardData.comprehension[i].probability < 0.5 && cardData.comprehension[i].probability > 0.3){
+                highlighted_answer += '<span style="background-color: #afdce3;">' + highlighted_part + '</span>';
+            } else {
+                highlighted_answer += '<span style="background-color: #D7DBDD;">' + highlighted_part + '</span>';
+            }
             highlighted_answer += rest_part;
             console.log(cardData.comprehension[i].answer);
             console.log(para.substr(answer_start, answer_end-1));
             // context.push(cardData.paragraphs[para_id]);
-            context.push(highlighted_answer);
+            context[cardData.comprehension[i].paragraph_id] = highlighted_answer
+            // context.push(highlighted_answer);
         }
 
         var paragraphs_html = "";
         for (var i=0; i<context.length; i++) {
             paragraphs_html += context[i];
-            paragraphs_html += '<div class="ui divider"></div>'
+            paragraphs_html += '<div class="space"></div>'
         }
 
         var content_html = "";
@@ -78,6 +107,18 @@
             title = cardData.title;
         } else {
             title = "Paper Link"
+        }
+
+        var confidence_html = "";
+        if (cardData.document_score > 0.6) {
+            confidence_html = '<i class="circle icon" style="color: #138D75;"></i>';
+            confidence_html += '<a> High Confidence: ' + cardData.document_score + "</a>";
+        } else if (cardData.document_score < 0.6 && cardData.document_score > 0.3) {
+            confidence_html = '<i class="circle icon" style="color: #F4D03F;"></i>';
+            confidence_html += '<a> Medium Confidence: ' + cardData.document_score + "</a>";
+        } else {
+            confidence_html = '<i class="circle icon" style="color: #F08080;"></i>';
+            confidence_html += '<a> Low Confidence: ' + cardData.document_score + "</a>";
         }
         var documentRankCardTemplate = [
             '<div class="column space document" id="', idx.toString() ,'">',
@@ -96,7 +137,7 @@
                         '</span>',
                     '</div>',
                     '<div class="extra content">',
-                        '<a>Confidence:', cardData.document_score, '</a>',
+                        confidence_html,
                     '</div>',
                 '</div>',
             '</div>'
@@ -129,9 +170,27 @@
                         '</div>',
                     '</div>',
                     '<div class="ui divider"></div>',
-                    '<div class="description">',
+                    '<div class="ui stackable three column divided grid container">',
+                        '<div class="row">',
+                            '<div class="column">',
+                                '<i class="circle icon" style="color: #ABEBC6;"></i>',
+                                'High Confidence',
+                            '</div>',
+                            '<div class="column">',
+                                '<i class="circle icon" style="color:#afdce3;"></i>',
+                                'Medium Confidence',
+                            '</div>',
+                            '<div class="column">',
+                                '<i class="circle icon" style="color:#D7DBDD;"></i>',
+                                'Low Confidence',
+                            '</div>',
+                        '</div>',
+                    '</div>',
+                    '<div class="ui divider"></div>',
+                    '<div class="scrolling content">',
                         paragraphs_html,
                     '</div>',
+                    '<div class="ui divider"></div>',
                     '<div class="extra content">',
                         '<span>',
                             'Affiliations: <a>', cardData.affiliations ,'</a>',
@@ -145,7 +204,7 @@
                     '<p>', cardData.abstract ,'</p>',
                 '</div>',
             '</div>',
-            '<div class="ui longer modal" id="content_', i.toString() ,'">',
+            '<div class="ui longer modal" id="content_', idx.toString() ,'">',
                 '<div class="header">Content</div>',
                     '<div class="scrolling content">',
                     '<p>', content_html ,'</p>',
@@ -179,6 +238,7 @@
         $('div.ui.raised.card.link.doc').removeAttr('id');
         $(this).children().first().attr('id', "selectedcard");
     });
+
 </script>
 
 <div class="ui segments">
@@ -194,12 +254,19 @@
     </div>
 </div>
 
-<div class="ui center aligned header" id="spinner" style="display: none;">
-    <div class="ui center aligned">
-        <div class="ui icon input loading">
-            <i class="search icon"></i>
-        </div>
+
+<div class="ui segment" id="spinner" style="display: none;">
+    <br>
+    <br>
+    <div class="ui active inverted dimmer">
+      <div class="ui medium text loader" id="spinnerText">
+        <div id="quote1"><span class="quote">Loading {{num_docs}} documents...</span></div>
+        <div id="quote2">Ranking {{num_docs}} documents...</div>
+        <div id="quote3">Comprehending {{num_docs}} documents...</div>
+      </div>
     </div>
+    <p></p>
+    <p></p>
 </div>
 
 <div class="ui grid">
@@ -220,6 +287,7 @@
                     </span>
                 </div>
                 <div class="extra content">
+                    <i class="circle icon" style="color: darkgreen;"></i>
                     Confidence: <a>0.45</a>
                 </div>
             </div>
@@ -252,6 +320,23 @@
                 </div>
                 <div class="ui divider"></div>
                 <div class="description">
+                    <div class="ui stackable three column divided grid container">
+                        <div class="row">
+                            <div class="column">
+                                <i class="circle icon" style="color: #ABEBC6;"></i>
+                                High Confidence
+                            </div>
+                            <div class="column">
+                                <i class="circle icon" style="color:#afdce3;"></i>
+                                Medium Confidence
+                            </div>
+                            <div class="column">
+                                <i class="circle icon" style="color:#D7DBDD;"></i>
+                                Low Confidence
+                            </div>
+                        </div>
+                        <div class="ui divider"></div>
+                    </div>
                     Panel content
                 </div>
                 <div class="ui divider"></div>
@@ -262,5 +347,6 @@
         </div> -->
     </div>
 </div>
+
 
 {% endblock %}
