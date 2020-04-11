@@ -65,38 +65,37 @@
         var context = cardData.paragraphs;
         for (var i=0; i<cardData.comprehension.length; i++) {
             var highlighted_answer = "";
-            var para = cardData.comprehension[i].context;
+            var context_para = cardData.comprehension[i].context;
             var answer_start = cardData.comprehension[i].offset_answer_start;
             var answer_end = cardData.comprehension[i].offset_answer_end;
-            var intial_part = para.substr(0, answer_start);
-            var highlighted_part = para.substr(answer_start, answer_end - 1);
-            var rest_part = para.substr(answer_end, para.length);
+            var intial_part = context_para.substring(0, answer_start);
+            var highlighted_part = context_para.substring(answer_start, answer_end);
+            var rest_part = context_para.substring(answer_end, context_para.length);
             highlighted_answer += intial_part;
-            if (cardData.comprehension[i].probability > 0.5) {
+            var score = cardData.comprehension[i].probability;
+            if (score > 0.5) {
                 if (i == 0){
-                    highlighted_answer += '<span style="background-color: #ABEBC6;" id="top">' + highlighted_part + '</span>';
+                    highlighted_answer += '<span style="background-color: #ABEBC6;" id="top" >' + highlighted_part + '</span>';
                 } else {
                     highlighted_answer += '<span style="background-color: #ABEBC6;" >' + highlighted_part + '</span>';
                 }
-            } else if (cardData.comprehension[i].probability < 0.5 && cardData.comprehension[i].probability > 0.3){
+            } else if (score < 0.5 && score > 0.3){
                 if (i == 0){
                     highlighted_answer += '<span style="background-color: #afdce3;" id="top">' + highlighted_part + '</span>';
                 } else {
-                    highlighted_answer += '<span style="background-color: #afdce3;">' + highlighted_part + '</span>';
+                    highlighted_answer += '<span style="background-color: #afdce3;" >' + highlighted_part + '</span>';
                 }
             } else {
                 if (i == 0){
                     highlighted_answer += '<span style="background-color: #D7DBDD;" id="top">' + highlighted_part + '</span>';
                 } else {
-                    highlighted_answer += '<span style="background-color: #D7DBDD;">' + highlighted_part + '</span>';
+                    highlighted_answer += '<span style="background-color: #D7DBDD;" >' + highlighted_part + '</span>';
                 }
             }
             highlighted_answer += rest_part;
-            console.log("comp = ", cardData.comprehension[i]);
-            console.log("highlighted answer", highlighted_answer);
-            console.log("highlighted part = ", highlighted_part);
+
             console.log("comp answer = ", cardData.comprehension[i].answer);
-            console.log("indices answer = ", para.substr(answer_start, answer_end-1));
+            console.log("indices answer = ", context_para.substring(answer_start, answer_end));
             // context.push(cardData.paragraphs[para_id]);
             context[cardData.comprehension[i].paragraph_id] = highlighted_answer
             // context.push(highlighted_answer);
@@ -362,7 +361,9 @@
                         </div>
                         <div class="ui divider"></div>
                     </div>
-                    Panel content
+                    <div>
+                        Panel content
+                    </div>
                 </div>
                 <div class="ui divider"></div>
                 <div class="extra content">
