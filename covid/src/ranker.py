@@ -6,21 +6,21 @@ warnings.simplefilter('ignore')
 
 
 def paragraph_ranking(query, model, documents, top_k=15):
-    results = []
     for each_doc in documents:
-        paras = each_doc['text'].split('\n\n')
-        paras = [para for para in paras if len(para) > 0]
+        paras = each_doc["paragraphs"]
         para_embeds = model.encode(paras, show_progress_bar=False)
         query_embed = model.encode([query], show_progress_bar=False)
         distances = scipy.spatial.distance.cdist(query_embed, para_embeds, "cosine")[0]
+        paragraph_ranking = []
         for para_idx, para_score in enumerate(distances):
             result = {}
-            result['para'] = paras[para_idx]
-            result['para_score'] = round(1 - para_score, 4)
-            result.update(each_doc)
-            results.append(result)
-    sorted_paras = sorted(results, key=lambda x: x['para_score'], reverse=True)
-    return sorted_paras[0:top_k]
+            result['paragraph_id'] = paras[para_idx]
+            result['paragraph_score'] = round(1 - para_score, 4)
+            paragraph_ranking.append(result)
+        sorted_paras = sorted(paragraph_ranking, key=lambda x: x['paragraph_score'], reverse=True)
+        paragraph_ranking_results = sorted_paras[0:top_k]
+        each_doc["paragraph_ranking"] = paragraph_ranking_results
+    return documents
 
 
 def rank_with_bert(query, model, corpus, corpus_embed, top_k=5):
@@ -33,9 +33,11 @@ def rank_with_bert(query, model, corpus, corpus_embed, top_k=5):
         results = []
         for count, (idx, distance) in enumerate(distances[0:top_k]):
             doc = corpus.iloc[idx]
+            paras = doc['text'].split('\n\n')
+            paras = [para for para in paras if len(para) > 0]
             result = {}
-            result['rank'] = count + 1
-            result['score'] = round(1 - distance, 4)
+            result['document_rank'] = count + 1
+            result['document_score'] = round(1 - distance, 4)
             result['paper_id'] = doc['paper_id']
             result['cord_uid'] = doc['cord_uid']
             result['title'] = doc['title']
@@ -43,7 +45,7 @@ def rank_with_bert(query, model, corpus, corpus_embed, top_k=5):
             result['authors'] = doc['authors']
             result['affiliations'] = doc['affiliations']
             result['abstract'] = doc['abstract']
-            result['text'] = doc['text']
+            result['paragraphs'] = paras
             result['url'] = doc['url']
             result['source'] = doc['source']
             result['license'] = doc['license']
@@ -55,8 +57,8 @@ def show_ranking_results(results):
     result = {"title": [], "doc_rank": [], "doc_score": [], "abstract": []}
     for r in results:
         result['title'].append(r['title'])
-        result['doc_rank'].append(r['rank'])
-        result['doc_score'].append(r['score'])
+        result['doc_rank'].append(r['document_rank'])
+        result['doc_score'].append(r['document_score'])
         result['abstract'].append(r['abstract'])
     df = pd.DataFrame(result)
     print(df)

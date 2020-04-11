@@ -6,6 +6,8 @@
         $("#queryForm").submit(function(e) {
             e.preventDefault();
             $('#spinner').show();
+            $('#doc_results').empty();
+            $('#comp_results').empty();
             // e.stopPropagation(); 
             var query = $("#query").val();
             $.ajax('/query', {
@@ -14,17 +16,24 @@
                 data: JSON.stringify({"query": query}),
                 dataType: 'json',
                 success: function(response) {
-                    $('#spinner').hide()
-                    results = response.response.answers
-                    // results = response.response
-                    var resultCards = $();
+                    results = response.response.results;
+                    console.log(results);
+                    var documentCards = $();
+                    var comprehensionCards = $();
                     results.forEach(function(item, i) {
                         var card = createCard(item, i);
-                        resultCards = resultCards.add(card);
+                        documentCards = documentCards.add(card[0]);
+                        comprehensionCards = comprehensionCards.add(card[1])
                     });
+                    $('#spinner').hide();
                     $(function() {
-                        $('#comprehend_results').append(resultCards);
-                    })
+                        $('#doc_results').append(documentCards);
+                        $("#comp_results").append(comprehensionCards);
+                        $("#comp_results").children().hide();
+                        $('#doc_results').children().first().children().first().attr('id', "selectedcard");
+                        $("#comp_results").children().first().show();
+
+                    });
                 },
                 error: function(xhr, ajaxOptions, thrownError){
                     alert(xhr.responseText);
@@ -33,48 +42,102 @@
           });
       });
 
-      function createCard(cardData, i){
-          var context = ""
-          if (cardData.context.length > 520){
-            context = [cardData.context.substr(0, 520), 
-                        '...',
-                        '<a class="context_modal" id="' + i.toString() + '">show more</a>'];
-            context = context.join('');
-            console.log(context);
-            console.log("context loop")
-          } else {
-              context = cardData.context;
-          }
+    function createCard(cardData, idx){
+        var context = [];
+        for (var i=0; i<cardData.comprehension.length; i++) {
+            var highlighted_answer = "";
+            var para = cardData.comprehension[i].context;
+            var answer_start = cardData.comprehension[i].answer_start;
+            var answer_end = cardData.comprehension[i].answer_end;
+            var intial_part = para.substr(0, answer_start);
+            var highlighted_part = para.substr(answer_start, answer_end - 1);
+            var rest_part = para.substr(answer_end, para.length);
+            highlighted_answer += intial_part;
+            highlighted_answer += '<span style="background-color: #afdce3;">' + highlighted_part + '</span>',
+            highlighted_answer += rest_part;
+            console.log(cardData.comprehension[i].answer);
+            console.log(para.substr(answer_start, answer_end-1));
+            // context.push(cardData.paragraphs[para_id]);
+            context.push(highlighted_answer);
+        }
 
-          var title = "";
-          if (cardData.title){
-              title = cardData.title;
-          } else {
-              title = "Paper Link"
-          }
-          var cardTemplate = [
-            '<div class="ui raised card link segment">',
-                '<div class="content">',
-                    '<i class="right floated">confidence: ', cardData.probability, '</i>',
-                    '<div class="header"><a href="', cardData.url, '" target="_blank">', title, '</a></div>',
-                    '<div class="meta">',
-                        '<span>Published: ', cardData.publish_time, '</span>',
-                        '<a> License: ', cardData.license, '</a>',
+        var paragraphs_html = "";
+        for (var i=0; i<context.length; i++) {
+            paragraphs_html += context[i];
+            paragraphs_html += '<div class="ui divider"></div>'
+        }
+
+        var content_html = "";
+        for (var i=0; i<cardData.paragraphs.length; i++) {
+            content_html += cardData.paragraphs[i];
+            content_html += '<div class="space"></div>';
+        }
+
+        var title = "";
+        if (cardData.title){
+            title = cardData.title;
+        } else {
+            title = "Paper Link"
+        }
+        var documentRankCardTemplate = [
+            '<div class="column space document" id="', idx.toString() ,'">',
+                '<div class="ui raised card link doc">',
+                    '<div class="content">',
+                        '<div class="description">',
+                            title.substr(0, 130),
+                        '</div>',
                     '</div>',
-                    '<div class="description">',
-                        '<span class="more">', context, '</span>',
+                    '<div class="extra content">',
+                        '<span>',
+                            '<a class="abstract_modal" id="', idx.toString() ,'">Show Abstract</a>',
+                        '</span>',
+                        '<span class="right floated">',
+                            '<a class="content_modal" id="', i.toString() ,'">Show Content</a>',
+                        '</span>',
+                    '</div>',
+                    '<div class="extra content">',
+                        '<a>Confidence:', cardData.document_score, '</a>',
                     '</div>',
                 '</div>',
-                '<div class="extra content">',
-                    '<span class="right floated">',
-                        '<a class="content_modal" id="', i.toString() ,'">Show Content</a>',
-                    '</span>',
-                    '<span>',
-                    '<a class="abstract_modal" id="', i.toString() ,'">Show Abstract</a>',
-                    '</span>',
+            '</div>'
+        ];
+        var comprehensionCardTemplate = [
+            '<div class="column" id="comprehension_', idx.toString() ,'">',
+                '<h4 class="ui blue segment top attached header">',
+                '<a href="', cardData.url, '" target="_blank">', title, '</a></h4>',
+                '<div class="ui bottom attached segment">',
+                    '<div class="ui extra content top attached block header">',
+                        '<div class="ui stackable three column divided grid container">',
+                            '<div class="row">',
+                                '<div class="column">',
+                                    'Published Date:', cardData.publish_time,
+                                '</div>',
+                                '<div class="column">',
+                                    'License:', cardData.license,
+                                '</div>',
+                                '<div class="column">',
+                                    'Source:', cardData.source,
+                                '</div>',
+                            '</div>',
+                            '<div class="row">',
+                                '<div class="column">',
+                                    'Authors:', cardData.authors,
+                                '</div>',
+                            '</div>',
+                        '</div>',
+                    '</div>',
+                    '<div class="ui divider"></div>',
+                    '<div class="description">',
+                        paragraphs_html,
+                    '</div>',
+                    '<div class="extra content">',
+                        '<span>',
+                            '<a>Affiliations:', cardData.affiliations ,'</a>',
+                        '</span>',
+                    '</div>',
                 '</div>',
             '</div>',
-            '<div class="ui longer modal" id="abstract_', i.toString() ,'">',
+            '<div class="ui longer modal" id="abstract_', idx.toString() ,'">',
                 '<div class="header">Abstract</div>',
                     '<div class="scrolling content">',
                     '<p>', cardData.abstract ,'</p>',
@@ -83,18 +146,12 @@
             '<div class="ui longer modal" id="content_', i.toString() ,'">',
                 '<div class="header">Content</div>',
                     '<div class="scrolling content">',
-                    '<p>', cardData.text ,'</p>',
-                '</div>',
-            '</div>',
-            '<div class="ui longer modal" id="context_', i.toString() ,'">',
-                '<div class="header">Answer</div>',
-                    '<div class="scrolling content">',
-                    '<p>', cardData.context ,'</p>',
+                    '<p>', content_html ,'</p>',
                 '</div>',
             '</div>'
-          ];
-          return $(cardTemplate.join(''));
-      }
+        ];
+        return [$(documentRankCardTemplate.join('')), $(comprehensionCardTemplate.join(''))];
+    }
 
     });
 
@@ -111,6 +168,14 @@
     $(document).on("click", "a.context_modal", function(){
         var id = $(this).attr('id');
         $('#context_' + id).modal('show');
+    });
+
+    $(document).on("click", "div.column.document", function(){
+        var id = $(this).attr('id');
+        $("#comp_results").children().hide();
+        $('#comprehension_' + id).show();
+        $('div.ui.raised.card.link.doc').removeAttr('id');
+        $(this).children().first().attr('id', "selectedcard");
     });
 </script>
 
@@ -135,8 +200,65 @@
     </div>
 </div>
 
-<div class="ui segments" id="comprehend_results">
+<div class="ui grid">
+   <div class="four wide column" id="doc_results">
+        <!-- <div class="column">
+            <div class="ui raised card link doc">
+                <div class="content">
+                  <div class="description">
+                    0 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  </div>
+                </div>
+                <div class="extra content">
+                    <span>
+                        <a class="abstract_modal" id="1">Show Abstract</a>
+                    </span>
+                    <span class="right floated">
+                        <a class="content_modal" id="1">Show Content</a>
+                    </span>
+                </div>
+                <div class="extra content">
+                    Confidence: <a>0.45</a>
+                </div>
+            </div>
+        </div> -->
+   </div>
 
+   <div class="twelve wide column scrolling content" id="comp_results">
+        <!-- <div class="column">
+            <h4 class="ui blue segment top attached header"><a>Title</a></h4>
+            <div class="ui bottom attached segment">
+                <div class="ui extra content top attached block header">
+                    <div class="ui stackable three column divided grid container">
+                        <div class="row">
+                            <div class="column">
+                                Published Date:
+                            </div>
+                            <div class="column">
+                                License:
+                            </div>
+                            <div class="column">
+                                Source:
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="column">
+                                Authors:
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ui divider"></div>
+                <div class="description">
+                    Panel content
+                </div>
+                <div class="ui divider"></div>
+                <div class="extra content">
+                    <a>Affliations: </a>
+                </div>
+            </div>
+        </div> -->
+    </div>
 </div>
 
 {% endblock %}

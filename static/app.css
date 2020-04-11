@@ -13,3 +13,11 @@ h2.ui.center.header {
 #spinner {
     margin-top: 1em;
 }
+
+#selectedcard {
+    background-color: #EBF5FB;
+}
+
+.space {
+    margin-bottom: 5px;
+}
