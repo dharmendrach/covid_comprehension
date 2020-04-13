@@ -198,7 +198,7 @@
                         '</div>',
                     '</div>',
                     '<div class="ui divider"></div>',
-                    '<div class="scrolling content" style="max-height: 500px; overflow:auto;">',
+                    '<div class="scrolling content" style="max-height: 500px; overflow:auto;" id="temp_', idx.toString() ,'">',
                         paragraphs_html,
                     '</div>',
                     '<div class="ui divider"></div>',
@@ -250,18 +250,18 @@
         $('div.ui.raised.card.link.doc').removeAttr('id');
         $(this).children().first().attr('id', "selectedcard");
         var $ele = $('#comprehension_' + id).find('#top');
-        goToByScroll($ele);
+        goToByScroll($ele, id);
     });
 
-    function goToByScroll(ele){
-        $('html,body').animate({
-            scrollTop: $(ele).offset().top},
+    function goToByScroll(ele, id){
+        $('#temp_'+id).animate({
+            scrollTop: $(ele).offset().top - $('#temp_'+id).offset().top + $('#temp_'+id).scrollTop()},
             'slow');
     }
 
     function firstElementHightlight(){
         var $ele = $('#comprehension_0').find('#top');
-        goToByScroll($ele);
+        goToByScroll($ele, 0);
     }
 
 
