@@ -108,10 +108,10 @@ def home(request: Request):
     displays the stock screener dashboard / homepage
     """
     num_docs = len(rank_corpus)
-    # num_docs = 10
+    # num_docs = 40000
     return templates.TemplateResponse("home.html", {
         "request": request,
-        "num_docs": num_docs
+        "num_docs": '{:,}'.format(num_docs)
     })
 
 
@@ -159,7 +159,7 @@ def post_query(request: Request, query_request: QueryRequest):
     #             "answer": "Lorem",
     #             "context": "1 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
     #             "paragraph_id": 1,
-    #             "probability": 0.33,
+    #             "probability": 0.13,
     #             "offset_answer_start": 2,
     #             "offset_answer_end": 7
     #         }

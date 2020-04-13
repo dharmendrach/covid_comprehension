@@ -12,7 +12,12 @@ h2.ui.center.header {
 
 #spinner {
     margin-top: 1em;
-    padding-bottom: 10em;
+    padding-bottom: 8em;
+    padding-top: 5em;
+}
+
+#spinnerText {
+    padding-top: 3em;
 }
 
 #selectedcard {
@@ -22,3 +27,126 @@ h2.ui.center.header {
 .space {
     margin-bottom: 5px;
 }
+
+.ocrloader {
+    width: 94px;
+    height: 77px;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    backface-visibility: hidden;
+  }
+  .ocrloader span {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 20px;
+    background-color: rgba(45, 183, 183, 0.54);
+    z-index: 1;
+    transform: translateY(135%);
+    animation: move 0.7s cubic-bezier(0.15, 0.44, 0.76, 0.64);
+    animation-iteration-count: infinite;
+  }
+  .ocrloader > div {
+    z-index: 1;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 48%;
+    backface-visibility: hidden;
+  }
+  .ocrloader i {
+    display: block;
+    height: 1px;
+    background: #000;
+    margin: 0 auto 2px;
+    margin: 0 auto 2.2px;
+    backface-visibility: hidden;
+  }
+  .ocrloader i:nth-child(2) {
+    width: 75%;
+  }
+  .ocrloader i:nth-child(3) {
+    width: 81%;
+  }
+  .ocrloader i:nth-child(4) {
+    width: 87%;
+  }
+  .ocrloader i:nth-child(6) {
+    width: 71%;
+  }
+  .ocrloader i:nth-child(7) {
+    width: 81%;
+  }
+  .ocrloader i:nth-child(8) {
+    width: 65%;
+  }
+  .ocrloader i:nth-child(9) {
+    width: 83%;
+  }
+  .ocrloader i:nth-child(10) {
+    width: 75%;
+  }
+  .ocrloader i:nth-child(12) {
+    width: 86%;
+  }
+  .ocrloader i:nth-child(14) {
+    width: 65%;
+  }
+  .ocrloader i:nth-child(16) {
+    width: 75%;
+  }
+  .ocrloader i:nth-child(18) {
+    width: 83%;
+  }
+  .ocrloader:before,
+  .ocrloader:after,
+  .ocrloader em:after,
+  .ocrloader em:before {
+    border-color: #000;
+    content: "";
+    position: absolute;
+    width: 19px;
+    height: 16px;
+    border-style: solid;
+    border-width: 0px;
+  }
+  .ocrloader:before {
+    left: 0;
+    top: 0;
+    border-left-width: 1px;
+    border-top-width: 1px;
+  }
+  .ocrloader:after {
+    right: 0;
+    top: 0;
+    border-right-width: 1px;
+    border-top-width: 1px;
+  }
+  .ocrloader em:before {
+    left: 0;
+    bottom: 0;
+    border-left-width: 1px;
+    border-bottom-width: 1px;
+  }
+  .ocrloader em:after {
+    right: 0;
+    bottom: 0;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+  }
+  @keyframes move {
+    0%,
+    100% {
+      transform: translateY(135%);
+    }
+    50% {
+      transform: translateY(0%);
+    }
+    75% {
+      transform: translateY(272%);
+    }
+  }
+  

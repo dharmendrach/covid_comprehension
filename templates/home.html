@@ -64,7 +64,7 @@
     function createCard(cardData, idx){
         var context = cardData.paragraphs;
         for (var i=0; i<cardData.comprehension.length; i++) {
-            var highlighted_answer = "";
+            var highlighted_answer = '<span style="background-color: #D7DBDD;">';
             var context_para = cardData.comprehension[i].context;
             var answer_start = cardData.comprehension[i].offset_answer_start;
             var answer_end = cardData.comprehension[i].offset_answer_end;
@@ -75,24 +75,25 @@
             var score = cardData.comprehension[i].probability;
             if (score > 0.5) {
                 if (i == 0){
-                    highlighted_answer += '<span style="background-color: #ABEBC6;" id="top" >' + highlighted_part + '</span>';
+                    highlighted_answer += '<span style="background-color: #82E0AA;" id="top" >' + highlighted_part + '</span>';
                 } else {
-                    highlighted_answer += '<span style="background-color: #ABEBC6;" >' + highlighted_part + '</span>';
+                    highlighted_answer += '<span style="background-color: #82E0AA;" >' + highlighted_part + '</span>';
                 }
             } else if (score < 0.5 && score > 0.3){
                 if (i == 0){
-                    highlighted_answer += '<span style="background-color: #afdce3;" id="top">' + highlighted_part + '</span>';
+                    highlighted_answer += '<span style="background-color: #85C1E9;" id="top">' + highlighted_part + '</span>';
                 } else {
-                    highlighted_answer += '<span style="background-color: #afdce3;" >' + highlighted_part + '</span>';
+                    highlighted_answer += '<span style="background-color: #85C1E9;" >' + highlighted_part + '</span>';
                 }
             } else {
                 if (i == 0){
-                    highlighted_answer += '<span style="background-color: #D7DBDD;" id="top">' + highlighted_part + '</span>';
+                    highlighted_answer += '<span style="background-color: #909497;" id="top">' + highlighted_part + '</span>';
                 } else {
-                    highlighted_answer += '<span style="background-color: #D7DBDD;" >' + highlighted_part + '</span>';
+                    highlighted_answer += '<span style="background-color: #909497;" >' + highlighted_part + '</span>';
                 }
             }
             highlighted_answer += rest_part;
+            highlighted_answer += '</span>';
 
             console.log("comp answer = ", cardData.comprehension[i].answer);
             console.log("indices answer = ", context_para.substring(answer_start, answer_end));
@@ -184,15 +185,15 @@
                     '<div class="ui stackable three column divided grid container">',
                         '<div class="row">',
                             '<div class="column">',
-                                '<i class="circle icon" style="color: #ABEBC6;"></i>',
+                                '<i class="circle icon" style="color: #82E0AA;"></i>',
                                 'High Confidence',
                             '</div>',
                             '<div class="column">',
-                                '<i class="circle icon" style="color:#afdce3;"></i>',
+                                '<i class="circle icon" style="color:#85C1E9;"></i>',
                                 'Medium Confidence',
                             '</div>',
                             '<div class="column">',
-                                '<i class="circle icon" style="color:#D7DBDD;"></i>',
+                                '<i class="circle icon" style="color:#909497;"></i>',
                                 'Low Confidence',
                             '</div>',
                         '</div>',
@@ -282,16 +283,24 @@
 
 
 <div class="ui segment" id="spinner" style="display: none;">
-    <div class="ui active inverted dimmer">
-      <div class="ui huge text loader" id="spinnerText">
-        <div id="quote1"><span class="quote" style="color: #884EA0;">Loading <b>{{num_docs}}</b> documents...</span></div>
-        <div id="quote2" style="color: #E67E22;">Ranking <b>{{num_docs}} </b> documents...</div>
-        <div id="quote3" style="color: #3498DB;">Comprehending <b> {{num_docs}} </b> documents...</div>
-      </div>
+    <div class="ocrloader">
+        <em></em>
+        <div>
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i>
+        </div>
+        <span></span>
     </div>
+      <div class="ui center aligned header" id="spinnerText">
+        <div id="quote1"><span class="quote" style="color: #884EA0;">Scanning <b style="font-size: xx-large;">{{num_docs}}</b> documents...</span></div>
+        <div id="quote2" style="color: #E67E22;">Ranking <b style="font-size: xx-large;">{{num_docs}} </b> documents...</div>
+        <div id="quote3" style="color: #3498DB;">Comprehending <b style="font-size: xx-large;"> {{num_docs}} </b> documents...</div>
+      </div>
     <p></p>
     <p></p>
 </div>
+
 
 <div class="ui grid">
    <div class="four wide column" id="doc_results">
