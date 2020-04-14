@@ -64,7 +64,8 @@
     function createCard(cardData, idx){
         var context = cardData.paragraphs;
         for (var i=0; i<cardData.comprehension.length; i++) {
-            var highlighted_answer = '<span style="background-color: #D7DBDD;">';
+            // var highlighted_answer = '<span style="background-color: #D7DBDD;">';
+            var highlighted_answer = "";
             var context_para = cardData.comprehension[i].context;
             var answer_start = cardData.comprehension[i].offset_answer_start;
             var answer_end = cardData.comprehension[i].offset_answer_end;
@@ -87,13 +88,13 @@
                 }
             } else {
                 if (i == 0){
-                    highlighted_answer += '<span style="background-color: #909497;" id="top">' + highlighted_part + '</span>';
+                    highlighted_answer += '<span style="background-color: #D7DBDD;" id="top">' + highlighted_part + '</span>';
                 } else {
-                    highlighted_answer += '<span style="background-color: #909497;" >' + highlighted_part + '</span>';
+                    highlighted_answer += '<span style="background-color: #D7DBDD;" >' + highlighted_part + '</span>';
                 }
             }
             highlighted_answer += rest_part;
-            highlighted_answer += '</span>';
+            // highlighted_answer += '</span>';
 
             console.log("comp answer = ", cardData.comprehension[i].answer);
             console.log("indices answer = ", context_para.substring(answer_start, answer_end));
@@ -193,7 +194,7 @@
                                 'Medium Confidence',
                             '</div>',
                             '<div class="column">',
-                                '<i class="circle icon" style="color:#909497;"></i>',
+                                '<i class="circle icon" style="color:#D7DBDD;"></i>',
                                 'Low Confidence',
                             '</div>',
                         '</div>',
