@@ -19,30 +19,38 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
+
+# path to datasets
+DATA_PATH = 'data'
 BIORXIV_PATH = 'data/biorxiv_medrxiv/biorxiv_medrxiv/'
 COMM_USE_PATH = 'data/comm_use_subset/comm_use_subset/'
 NONCOMM_USE_PATH = 'data/noncomm_use_subset/noncomm_use_subset/'
 CUSTOM_PATH = 'data/custom_license/custom_license/'
 METADATA_PATH = 'data/metadata.csv'
 
-DATA_PATH = 'data'
 MODELS_PATH = 'models'
-RANK_MODE = 'bert'
-RANK_USING = 'abstract'
-MODEL_NAME = 'scibert-nli'
-COMPREHENSION_MODEL = "distilbert-base-uncased-distilled-squad"
-COMPREHENSION_TOKENIZER = "distilbert-base-uncased"
-use_gpu = -1
-CORPUS_PATH = os.path.join(DATA_PATH, 'corpus.pkl')
-MODEL_PATH = os.path.join(MODELS_PATH, MODEL_NAME)
+RANK_USING = 'abstract'     # rank using: abstract(default) / title / text
+MODEL_NAME = 'scibert-nli'  # model: scibert-nli / biobert-nli / covidbert-nli
+COMPREHENSION_MODEL = "distilbert-base-uncased-distilled-squad"     # model used for comprehension
+COMPREHENSION_TOKENIZER = "distilbert-base-uncased"                 # tokenizer for comprehension
+use_gpu = -1                                                        # use the gpu
+CORPUS_PATH = os.path.join(DATA_PATH, 'corpus.pkl')                 # processed corpus path
+MODEL_PATH = os.path.join(MODELS_PATH, MODEL_NAME)                  # path to the saved model
 EMBEDDINGS_PATH = os.path.join(
-    DATA_PATH, f'{MODEL_NAME}-{RANK_USING}-embeddings.pkl')
+    DATA_PATH, f'{MODEL_NAME}-{RANK_USING}-embeddings.pkl')         # path to save the computed embeddings
 
-logging.info(f"Ranking with {RANK_MODE}, using model: {MODEL_NAME}")
+logging.info(f"Ranking with {RANK_USING}, using model: {MODEL_NAME}")
 
 
 def cache_corpus(mode):
+    """
+    For each datapath, clean the data and cache the cleaned data.
 
+    Parameters
+    ----------
+    mode: str
+        A string indicating the mode of ranking. (abstract / title / text)
+    """
     biorxiv_df = generate_clean_csv(
         BIORXIV_PATH, METADATA_PATH, 'biorxiv', DATA_PATH, mode)
     comm_use_df = generate_clean_csv(
@@ -72,6 +80,8 @@ else:
     with open(CORPUS_PATH, 'rb') as corpus_pt:
         corpus = pickle.load(corpus_pt)
 
+# model used for document ranking and paragraph ranking
+# default model is scibert-nli
 model = SentenceTransformer(MODEL_PATH)
 
 if RANK_USING == "abstract":
@@ -84,6 +94,8 @@ else:
     raise AttributeError(
         "Ranking should be with abstract, text (or) title are only supported")
 
+
+# computing, caching and loading embeddings for ranking purpose
 if not os.path.exists(EMBEDDINGS_PATH):
     logging.info("Computing and caching model embeddings for future use...")
     embeddings = model.encode(rank_corpus, show_progress_bar=True)
@@ -94,21 +106,24 @@ else:
     with open(EMBEDDINGS_PATH, 'rb') as file:
         embeddings = pickle.load(file)
 
+# model used for comprehension
 comprehension_model = pipeline("question-answering", model=COMPREHENSION_MODEL,
                                tokenizer=COMPREHENSION_TOKENIZER, device=use_gpu)
 
 
 class QueryRequest(BaseModel):
+    """
+    Request body for ranking and comprehension
+    """
     query: str
 
 
 @app.get("/")
 def home(request: Request):
     """
-    displays the stock screener dashboard / homepage
+    Displays the covid-19 comprehension homepage
     """
     num_docs = len(rank_corpus)
-    # num_docs = 40000
     return templates.TemplateResponse("home.html", {
         "request": request,
         "num_docs": '{:,}'.format(num_docs)
@@ -119,66 +134,15 @@ def home(request: Request):
 def post_query(request: Request, query_request: QueryRequest):
     query = query_request.query
 
+    # ranking the documents using pre-calculated embeddings and query
     document_rank_results = rank_with_bert(query, model, corpus, embeddings)
+
+    # ranking the paragraphs of the top retrieved documents
     paragraph_rank_results = paragraph_ranking(query, model, document_rank_results)
+
+    # comprehending the top paragraphs of the retrieved documents for finding answer
     comprehend_results = comprehend_with_bert(comprehension_model, query, paragraph_rank_results)
 
-    # comprehend_results = []
-    # each_answer = {
-    #     "title": "title of the document",
-    #     "document_score": 0.7,
-    #     "document_rank": 1,
-    #     "paragraphs": [
-    #         'Sachin Ramesh Tendulkar (/ˌsʌtʃɪn tɛnˈduːlkər/ (About this soundlisten); born 24 April 1973) is an Indian former international cricketer and a former captain of the Indian national team. He is widely regarded as one of the greatest batsmen in the history of cricket.[4] He is the highest run scorer of all time in International cricket. Tendulkar took up cricket at the age of eleven, made his Test debut on 15 November 1989 against Pakistan in Karachi at the age of sixteen, and went on to represent Mumbai domestically and India internationally for close to twenty-four years. He is the only player to have scored one hundred international centuries, the first batsman to score a double century in a One Day International (ODI), the holder of the record for the most runs in both Test and ODI, and the only player to complete more than 30,000 runs in international cricket.[5] He is colloquially known as Little Master or Master Blaster,[6][7][8][9] In 2001, Sachin Tendulkar became the first batsman to complete 10,000 ODI runs in his 259 innings.[10] In 2002, halfway through his career, Wisden Cricketers Almanack ranked him the second greatest Test batsman of all time, behind Don Bradman, and the second greatest ODI batsman of all time, behind Viv Richards.[11] Later in his career, Tendulkar was a part of the Indian team that won the 2011 World Cup, his first win in six World Cup appearances for India.[12] He had previously been named Player of the Tournament at the 2003 edition of the tournament, held in South Africa. In 2013, he was the only Indian cricketer included in an all-time Test World XI named to mark the 150th anniversary of Wisden Cricketers Almanack.[13][14][15] Tendulkar received the Arjuna Award in 1994 for his outstanding sporting achievement, the Rajiv Gandhi Khel Ratna award in 1997, Indias highest sporting honour, and the Padma Shri and Padma Vibhushan awards in 1999 and 2008, respectively, Indias fourth and second highest civilian awards.[16] After a few hours of his final match on 16 November 2013, the Prime Ministers Office announced the decision to award him the Bharat Ratna, Indias highest civilian award.[17][18] He is the youngest recipient to date and the first ever sportsperson to receive the award.[19][20] He also won the 2010 Sir Garfield Sobers Trophy for cricketer of the year at the ICC awards.[21] In 2012, Tendulkar was nominated to the Rajya Sabha, the upper house of the Parliament of India.[22] He was also the first sportsperson and the first person without an aviation background to be awarded the honorary rank of group captain by the Indian Air Force.[23] In 2012, he was named an Honorary Member of the Order of Australia.[24][25] Sachin Ramesh Tendulkar (/ˌsʌtʃɪn tɛnˈduːlkər/ (About this soundlisten); born 24 April 1973) is an Indian former international cricketer and a former captain of the Indian national team. He is widely regarded as one of the greatest batsmen in the history of cricket.[4] He is the highest run scorer of all time in International cricket. Tendulkar took up cricket at the age of eleven, made his Test debut on 15 November 1989 against Pakistan in Karachi at the age of sixteen, and went on to represent Mumbai domestically and India internationally for close to twenty-four years. He is the only player to have scored one hundred international centuries, the first batsman to score a double century in a One Day International (ODI), the holder of the record for the most runs in both Test and ODI, and the only player to complete more than 30,000 runs in international cricket.[5] He is colloquially known as Little Master or Master Blaster,[6][7][8][9] In 2001, Sachin Tendulkar became the first batsman to complete 10,000 ODI runs in his 259 innings.[10] In 2002, halfway through his career, Wisden Cricketers Almanack ranked him the second greatest Test batsman of all time, behind Don Bradman, and the second greatest ODI batsman of all time, behind Viv Richards.[11] Later in his career, Tendulkar was a part of the Indian team that won the 2011 World Cup, his first win in six World Cup appearances for India.[12] He had previously been named Player of the Tournament at the 2003 edition of the tournament, held in South Africa. In 2013, he was the only Indian cricketer included in an all-time Test World XI named to mark the 150th anniversary of Wisden Cricketers Almanack.[13][14][15] Tendulkar received the Arjuna Award in 1994 for his outstanding sporting achievement, the Rajiv Gandhi Khel Ratna award in 1997, Indias highest sporting honour, and the Padma Shri and Padma Vibhushan awards in 1999 and 2008, respectively, Indias fourth and second highest civilian awards.[16] After a few hours of his final match on 16 November 2013, the Prime Ministers Office announced the decision to award him the Bharat Ratna, Indias highest civilian award.[17][18] He is the youngest recipient to date and the first ever sportsperson to receive the award.[19][20] He also won the 2010 Sir Garfield Sobers Trophy for cricketer of the year at the ICC awards.[21] In 2012, Tendulkar was nominated to the Rajya Sabha, the upper house of the Parliament of India.[22] He was also the first sportsperson and the first person without an aviation background to be awarded the honorary rank of group captain by the Indian Air Force.[23] In 2012, he was named an Honorary Member of the Order of Australia.[24][25] Sachin Ramesh Tendulkar (/ˌsʌtʃɪn tɛnˈduːlkər/ (About this soundlisten); born 24 April 1973) is an Indian former international cricketer and a former captain of the Indian national team. He is widely regarded as one of the greatest batsmen in the history of cricket.[4] He is the highest run scorer of all time in International cricket. Tendulkar took up cricket at the age of eleven, made his Test debut on 15 November 1989 against Pakistan in Karachi at the age of sixteen, and went on to represent Mumbai domestically and India internationally for close to twenty-four years. He is the only player to have scored one hundred international centuries, the first batsman to score a double century in a One Day International (ODI), the holder of the record for the most runs in both Test and ODI, and the only player to complete more than 30,000 runs in international cricket.[5] He is colloquially known as Little Master or Master Blaster,[6][7][8][9] In 2001, Sachin Tendulkar became the first batsman to complete 10,000 ODI runs in his 259 innings.[10] In 2002, halfway through his career, Wisden Cricketers Almanack ranked him the second greatest Test batsman of all time, behind Don Bradman, and the second greatest ODI batsman of all time, behind Viv Richards.[11] Later in his career, Tendulkar was a part of the Indian team that won the 2011 World Cup, his first win in six World Cup appearances for India.[12] He had previously been named Player of the Tournament at the 2003 edition of the tournament, held in South Africa. In 2013, he was the only Indian cricketer included in an all-time Test World XI named to mark the 150th anniversary of Wisden Cricketers Almanack.[13][14][15] Tendulkar received the Arjuna Award in 1994 for his outstanding sporting achievement, the Rajiv Gandhi Khel Ratna award in 1997, Indias highest sporting honour, and the Padma Shri and Padma Vibhushan awards in 1999 and 2008, respectively, Indias fourth and second highest civilian awards.[16] After a few hours of his final match on 16 November 2013, the Prime Ministers Office announced the decision to award him the Bharat Ratna, Indias highest civilian award.[17][18] He is the youngest recipient to date and the first ever sportsperson to receive the award.[19][20] He also won the 2010 Sir Garfield Sobers Trophy for cricketer of the year at the ICC awards.[21] In 2012, Tendulkar was nominated to the Rajya Sabha, the upper house of the Parliament of India.[22] He was also the first sportsperson and the first person without an aviation background to be awarded the honorary rank of group captain by the Indian Air Force.[23] In 2012, he was named an Honorary Member of the Order of Australia.[24][25]',
-    #         # "0 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    #         "1 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    #         "2 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    #         "3 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    #         'Sachin Ramesh Tendulkar (/ˌsʌtʃɪn tɛnˈduːlkər/ (About this soundlisten); born 24 April 1973) is an Indian former international cricketer and a former captain of the Indian national team. He is widely regarded as one of the greatest batsmen in the history of cricket.[4] He is the highest run scorer of all time in International cricket. Tendulkar took up cricket at the age of eleven, made his Test debut on 15 November 1989 against Pakistan in Karachi at the age of sixteen, and went on to represent Mumbai domestically and India internationally for close to twenty-four years. He is the only player to have scored one hundred international centuries, the first batsman to score a double century in a One Day International (ODI), the holder of the record for the most runs in both Test and ODI, and the only player to complete more than 30,000 runs in international cricket.[5] He is colloquially known as Little Master or Master Blaster,[6][7][8][9] In 2001, Sachin Tendulkar became the first batsman to complete 10,000 ODI runs in his 259 innings.[10] In 2002, halfway through his career, Wisden Cricketers Almanack ranked him the second greatest Test batsman of all time, behind Don Bradman, and the second greatest ODI batsman of all time, behind Viv Richards.[11] Later in his career, Tendulkar was a part of the Indian team that won the 2011 World Cup, his first win in six World Cup appearances for India.[12] He had previously been named Player of the Tournament at the 2003 edition of the tournament, held in South Africa. In 2013, he was the only Indian cricketer included in an all-time Test World XI named to mark the 150th anniversary of Wisden Cricketers Almanack.[13][14][15] Tendulkar received the Arjuna Award in 1994 for his outstanding sporting achievement, the Rajiv Gandhi Khel Ratna award in 1997, Indias highest sporting honour, and the Padma Shri and Padma Vibhushan awards in 1999 and 2008, respectively, Indias fourth and second highest civilian awards.[16] After a few hours of his final match on 16 November 2013, the Prime Ministers Office announced the decision to award him the Bharat Ratna, Indias highest civilian award.[17][18] He is the youngest recipient to date and the first ever sportsperson to receive the award.[19][20] He also won the 2010 Sir Garfield Sobers Trophy for cricketer of the year at the ICC awards.[21] In 2012, Tendulkar was nominated to the Rajya Sabha, the upper house of the Parliament of India.[22] He was also the first sportsperson and the first person without an aviation background to be awarded the honorary rank of group captain by the Indian Air Force.[23] In 2012, he was named an Honorary Member of the Order of Australia.[24][25]'
-    #     ],
-    #     "paragraph_ranking": [
-    #         {
-    #             "paragraph_id": 3,
-    #             "paragraph_score": 0.3
-    #         },
-    #         {
-    #             "paragraph_id": 1,
-    #             "paragraph_score": 0.1
-    #         }
-    #     ],
-    #     "comprehension": [
-    #         {
-    #             "answer": "Lorem ipsum",
-    #             "context": "3 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    #             "paragraph_id": 3,
-    #             "probability": 0.6,
-    #             "offset_answer_start": 2,
-    #             "offset_answer_end": 13
-    #         },
-    #         {
-    #             "answer": "Lorem",
-    #             "context": "1 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    #             "paragraph_id": 1,
-    #             "probability": 0.13,
-    #             "offset_answer_start": 2,
-    #             "offset_answer_end": 7
-    #         }
-    #     ],
-    #     "cord_uid": 123,
-    #     "publish_time": '20-20-2020',
-    #     "authors": "1 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    #     "affiliations": "Infosys bangalore",
-    #     "abstract": "this is the abstract of the document",
-    #     "url": "http://google.com",
-    #     "source": "github",
-    #     "license": "open source"
-    # }
-
-    # comprehend_results.append(each_answer)
-    # each_answer2 = each_answer.copy()
-    # each_answer2["document_score"] = 0.23
-    # each_answer2["title"] = "title 2"
-    # comprehend_results.append(each_answer2)
     results = {
         'query': query,
         'results': comprehend_results

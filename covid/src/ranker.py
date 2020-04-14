@@ -1,4 +1,3 @@
-import logging
 import warnings
 import scipy
 import pandas as pd
@@ -6,6 +5,31 @@ warnings.simplefilter('ignore')
 
 
 def paragraph_ranking(query, model, documents, top_k=5):
+    """
+    Paragraph Ranking
+
+    Converts the query into an embedding using model. Converts the paragraphs in the
+    document into embeddings using the model. Uses the query embedding and
+    paragraph embeddings to calculate the cosine similarity. Sorted the results according
+    to cosine scores. For the top_k paragraphs, maps the relevant metadata and returns
+    the results.
+
+    Parameters
+    ----------
+    query: str
+        A query string
+    model:
+        A model to convert the paragraphs and query into embeddings. Default is scibert-nli
+    documents:
+        A list containing the documents
+    top_k: int (default = 5)
+        Number of top paragraphs to retrieve from each document
+
+    Returns
+    -------
+    documents: list
+        Updates each document in the list with paragraph ranking results
+    """
     for each_doc in documents:
         paras = each_doc["paragraphs"]
         para_embeds = model.encode(paras, show_progress_bar=False)
@@ -24,6 +48,32 @@ def paragraph_ranking(query, model, documents, top_k=5):
 
 
 def rank_with_bert(query, model, corpus, corpus_embed, top_k=5):
+    """
+    Document Ranking
+
+    Converts the query into an embedding using model. Uses the query embedding and
+    corpus embeddings to calculate the cosine similarity. Sorted the results according
+    to cosine scores. For the top_k documents, maps the relevant metadata and returns
+    the results.
+
+    Parameters
+    ----------
+    query: str
+        A query string
+    model:
+        Model used for creating embeddings. Default is scibert-nli
+    corpus:
+        Cleaned corpus
+    corpus_embed:
+        Embeddings which will be used for ranking
+    top_k: int (default = 5)
+        Number of top documents to retrieve
+
+    Returns
+    -------
+    results: list
+        Updates each document in the list with document ranking results
+    """
     queries = [query]
     query_embeds = model.encode(queries, show_progress_bar=False)
     for query, query_embed in zip(queries, query_embeds):
@@ -54,6 +104,14 @@ def rank_with_bert(query, model, corpus, corpus_embed, top_k=5):
 
 
 def show_ranking_results(results):
+    """
+    Prints the document ranking results
+
+    Parameters
+    ----------
+    results: list
+        List of top retrieved documents
+    """
     result = {"title": [], "doc_rank": [], "doc_score": [], "abstract": []}
     for r in results:
         result['title'].append(r['title'])
