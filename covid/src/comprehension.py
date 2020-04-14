@@ -1,7 +1,36 @@
 import pandas as pd
+import spacy
+
+spacy_nlp = spacy.load('en_core_web_sm')
 
 N_BEST_PER_PASSAGE = 1
 
+def get_full_sentence(para_text, start_index, end_index):
+    """
+    Get surrounding sentence
+
+    Parameters
+    ----------
+    para_text: str
+        Paragraph text in form of string
+    start_index: int
+        start index in the original text
+    end_index: int
+        end index in the original text
+
+    Returns
+    -------
+        surrounding sentence for original text. it's start index and end index.
+    """
+    sent_start = 0
+    sent_end = len(para_text)
+    for sent in spacy_nlp(para_text).sents:
+        if (sent.start_char <= start_index) and (sent.end_char >= start_index):
+            sent_start = sent.start_char
+        if (sent.start_char <= end_index) and (sent.end_char >= end_index):
+            sent_end = sent.end_char
+    sentence = para_text[sent_start:sent_end + 1]
+    return sentence, sent_start, sent_end
 
 def result_on_one_document(model, question, document, top_k=5):
     paragraphs = document["paragraphs"]
@@ -14,11 +43,12 @@ def result_on_one_document(model, question, document, top_k=5):
         # assemble and format all answers
         # for pred in predictions:
         if pred["answer"]:
+            sent, start, end = get_full_sentence(query['context'], pred["start"], pred["end"])
             answers.append({
-                "answer": pred["answer"],
+                "answer": sent, # pred["answer"],
                 "context": paragraphs[para_idx],
-                "offset_answer_start": pred["start"],
-                "offset_answer_end": pred["end"],
+                "offset_answer_start": start, #pred["start"],
+                "offset_answer_end": end, # pred["end"],
                 "probability": round(pred["score"], 4),
                 "paragraph_id": para_idx
             })
