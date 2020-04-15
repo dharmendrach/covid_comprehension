@@ -153,15 +153,24 @@ def generate_clean_df(all_files, metadata, consider_empty=False, mode="abstract"
     for file in tqdm(all_files):
         mode_data = ""
         if mode == "abstract":
-            mode_data = format_body(file['abstract'])
+            try:
+                if 'abstract' in file.keys():
+                    mode_data = format_body(file['abstract'])
+                elif 'abstract' in file['metadata'].keys():
+                    mode_data = format_body(file['metadat']['abstract'])
+                else:
+                    mode_not_found += 1
+                    continue
+            except Exception as e:
+                mode_not_found += 1
+                continue
         elif mode == "text":
             mode_data = format_body(file['body_text'])
         elif mode == "title":
             mode_data = file['metadata']['title']
         if mode_data == "":
             mode_not_found += 1
-            if not consider_empty:
-                continue
+            continue
 
         id_row = metadata.loc[metadata['sha'] == file['paper_id']]
         row = id_row
@@ -209,7 +218,12 @@ def generate_clean_df(all_files, metadata, consider_empty=False, mode="abstract"
             affiliation = ''
 
         try:
-            abstract = format_body(file['abstract'])
+            if 'abstract' in file.keys():
+                abstract = format_body(file['abstract'])
+            elif 'abstract' in file['metadat'].keys():
+                abstract = format_body(file['metadat']['abstract'])
+            else:
+                abstract = ''
         except Exception as e:
             abstract = ''
 
@@ -236,7 +250,7 @@ def generate_clean_df(all_files, metadata, consider_empty=False, mode="abstract"
 
     logging.info(f"Metadata not found for {metadata_not_found} files")
     logging.info(f"{mode} is null for {mode_not_found} files")
-
+    logging.info(f"considered {len(cleaned_files)} files")
     col_names = ['paper_id', 'cord_uid', 'title', 'publish_time', 'authors',
                  'affiliations', 'abstract', 'text', 'url', 'source', 'license']
     clean_df = pd.DataFrame(cleaned_files, columns=col_names)
@@ -269,7 +283,7 @@ def generate_clean_csv(datapath, metadata_path, source, datafolder, mode):
     """
     files = load_files(datapath)
     metadata = pd.read_csv(metadata_path)
-    clean_df = generate_clean_df(files, metadata, mode)
+    clean_df = generate_clean_df(files, metadata,False, mode)
     logging.info(
         f"Saving the cleaned data into file: {datafolder}/clean_{source}.csv")
     clean_df.to_csv(f'{datafolder}/clean_{source}.csv', index=False)
