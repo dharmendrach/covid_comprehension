@@ -16,6 +16,8 @@ Both models are trained on [SNLI](https://nlp.stanford.edu/projects/snli/) [3] a
 
 For comprehension we finetuned the [CovidBERT](https://huggingface.co/deepset/covid_bert_base) model on [SQuAD](https://rajpurkar.github.io/SQuAD-explorer/) question answering data.
 
+- **[`covid_squad`](https://huggingface.co/graviraja/covid_squad)**, a fine-tuned version of Deepset's [CovidBERT](https://huggingface.co/deepset/covid_bert_base) on SQuAD dataset.
+
 Steps performed:
 
 - Rank the documents with paper **abstract** (or) **title** (or) **content** using any of the above mentioned models.

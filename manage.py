@@ -26,9 +26,9 @@ MODELS_PATH = 'models'
 RANK_USING = 'abstract'     # rank using: abstract(default) / title / text
 MODEL_NAME = 'scibert-nli'  # model: scibert-nli / biobert-nli
 # model used for comprehension
-COMPREHENSION_MODEL = "distilbert-base-uncased-distilled-squad"
+COMPREHENSION_MODEL = "graviraja/covid_squad"
 # tokenizer for comprehension
-COMPREHENSION_TOKENIZER = "distilbert-base-uncased"
+COMPREHENSION_TOKENIZER = "graviraja/covid_squad"
 # use the gpu
 use_gpu = -1
 # processed corpus path
@@ -124,4 +124,4 @@ if __name__ == '__main__':
 
         show_ranking_results(document_rank_results)
         print('*' * 100)
-        show_comprehension_results(comprehend_results["results"])
+        show_comprehension_results(comprehend_results)

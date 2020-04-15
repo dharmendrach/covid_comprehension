@@ -61,7 +61,7 @@ def result_on_one_document(model, question, document, top_k=5):
     for idx, para in enumerate(paragraph_rank_results):
         para_idx = para["paragraph_id"]
         query = {"context": paragraphs[para_idx], "question": question}
-        pred = model(query, topk=N_BEST_PER_PASSAGE)
+        pred = model(query, topk=N_BEST_PER_PASSAGE, max_answer_length=300)
         # assemble and format all answers
         # for pred in predictions:
         if pred["answer"]:
