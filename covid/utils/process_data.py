@@ -126,7 +126,7 @@ def format_body(body_text):
     return body
 
 
-def generate_clean_df(all_files, metadata, consider_without_mode=False, mode="abstract"):
+def generate_clean_df(all_files, metadata, consider_empty=False, mode="abstract"):
     """
     Formats each file and links with it's metada.
 
@@ -136,7 +136,7 @@ def generate_clean_df(all_files, metadata, consider_without_mode=False, mode="ab
         A list of json files
     metadata: pandas.DataFrame
         A pandas dataframe containing the metadata
-    consider_without_mode: boolean
+    consider_empty: boolean
         To consider or not to consider the empty values of mode
     mode: str
         A string indicating the mode used for ranking
@@ -150,46 +150,86 @@ def generate_clean_df(all_files, metadata, consider_without_mode=False, mode="ab
     metadata_not_found = 0
     mode_not_found = 0
 
-    if mode == "abstract":
-        mode_key = "abstract"
-    elif mode == "text":
-        mode_key == "body_text"
-    elif mode_key == "title":
-        mode_key = "title"
-    else:
-        raise AttributeError("Ranking should be with abstract, text (or) title are only supported")
-
     for file in tqdm(all_files):
-        row = metadata.loc[metadata['sha'] == file['paper_id']]
-        if row.empty:
-            metadata_not_found += 1
-            continue
-
         mode_data = ""
-        if mode == "abstract" or mode == "text":
+        if mode == "abstract":
             mode_data = format_body(file['abstract'])
+        elif mode == "text":
+            mode_data = format_body(file['body_text'])
         elif mode == "title":
             mode_data = file['metadata']['title']
         if mode_data == "":
             mode_not_found += 1
-            if consider_without_mode:
+            if not consider_empty:
                 continue
 
-        row = row.iloc[0]
+        id_row = metadata.loc[metadata['sha'] == file['paper_id']]
+        row = id_row
+        metadata_found = True
+        if id_row.empty:
+            title_row = metadata.loc[metadata['title'] == file['metadata']['title']]
+            if title_row.empty:
+                metadata_not_found += 1
+                metadata_found = False
+            else:
+                row = title_row
+        if metadata_found:
+            row = row.iloc[0]
+            cord_uid = row['cord_uid']
+            publish_time = row['publish_time']
+            url = row['url']
+            source = row['source_x']
+            license = row['license']
+        else:
+            cord_uid = ''
+            publish_time = ''
+            url = ''
+            source = ''
+            license = ''
+
+        try:
+            paper_id = file['paper_id']
+        except Exception as e:
+            paper_id = ''
+
+        try:
+            title = file['metadata']['title']
+        except Exception as e:
+            title = 'Title not found'
+
+        try:
+            authors = format_authors(file['metadata']['authors'])
+        except Exception as e:
+            authors = 'Authors not found'
+
+        try:
+            affiliation = format_authors(
+                file['metadata']['authors'], with_affiliation=True)
+        except Exception as e:
+            affiliation = ''
+
+        try:
+            abstract = format_body(file['abstract'])
+        except Exception as e:
+            abstract = ''
+
+        try:
+            body = format_body(file['body_text'])
+        except Exception as e:
+            body = ''
 
         features = [
-            file['paper_id'],
-            row['cord_uid'],
-            file['metadata']['title'],
-            row['publish_time'],
-            format_authors(file['metadata']['authors']),
-            format_authors(file['metadata']['authors'],
-                           with_affiliation=True),
-            format_body(file['abstract']),
-            format_body(file['body_text']),
-            row['url'],
-            row['source_x'],
-            row['license']
+            paper_id,
+            cord_uid,
+            title,
+            publish_time,
+            authors,
+            affiliation,
+            abstract,
+            body,
+            url,
+            source,
+            license
         ]
 
         cleaned_files.append(features)
@@ -230,6 +270,7 @@ def generate_clean_csv(datapath, metadata_path, source, datafolder, mode):
     files = load_files(datapath)
     metadata = pd.read_csv(metadata_path)
     clean_df = generate_clean_df(files, metadata, mode)
-    logging.info(f"Saving the cleaned data into file: {datafolder}/clean_{source}.csv")
+    logging.info(
+        f"Saving the cleaned data into file: {datafolder}/clean_{source}.csv")
     clean_df.to_csv(f'{datafolder}/clean_{source}.csv', index=False)
     return clean_df
