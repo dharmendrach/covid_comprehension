@@ -172,8 +172,8 @@ def generate_clean_df(all_files, metadata, consider_without_mode=False, mode="ab
             mode_data = file['metadata']['title']
         if mode_data == "":
             mode_not_found += 1
-        if consider_without_mode:
-            continue
+            if consider_without_mode:
+                continue
 
         row = row.iloc[0]
 
