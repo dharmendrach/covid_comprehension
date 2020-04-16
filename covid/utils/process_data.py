@@ -126,7 +126,7 @@ def format_body(body_text):
     return body
 
 
-def generate_clean_df(all_files, metadata, consider_empty=False, mode="abstract"):
+def generate_clean_df(all_files, metadata, mode="abstract"):
     """
     Formats each file and links with it's metada.
 
@@ -136,8 +136,6 @@ def generate_clean_df(all_files, metadata, consider_empty=False, mode="abstract"
         A list of json files
     metadata: pandas.DataFrame
         A pandas dataframe containing the metadata
-    consider_empty: boolean
-        To consider or not to consider the empty values of mode
     mode: str
         A string indicating the mode used for ranking
 
@@ -283,7 +281,7 @@ def generate_clean_csv(datapath, metadata_path, source, datafolder, mode):
     """
     files = load_files(datapath)
     metadata = pd.read_csv(metadata_path)
-    clean_df = generate_clean_df(files, metadata,False, mode)
+    clean_df = generate_clean_df(files, metadata, mode)
     logging.info(
         f"Saving the cleaned data into file: {datafolder}/clean_{source}.csv")
     clean_df.to_csv(f'{datafolder}/clean_{source}.csv', index=False)

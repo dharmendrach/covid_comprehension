@@ -26,9 +26,9 @@ MODELS_PATH = 'models'
 RANK_USING = 'abstract'     # rank using: abstract(default) / title / text
 MODEL_NAME = 'scibert-nli'  # model: scibert-nli / biobert-nli
 # model used for comprehension
-COMPREHENSION_MODEL = "graviraja/covid_squad"
+COMPREHENSION_MODEL = "graviraja/covidbert_squad"
 # tokenizer for comprehension
-COMPREHENSION_TOKENIZER = "graviraja/covid_squad"
+COMPREHENSION_TOKENIZER = "graviraja/covidbert_squad"
 # use the gpu
 use_gpu = -1
 # processed corpus path

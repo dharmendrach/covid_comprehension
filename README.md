@@ -2,6 +2,15 @@
 
 **Covid-19 Comprehension** uses state-of-the-art language model to search relevant content and comprehend the documents present inside the [COVID-19 Open Research Dataset (CORD-19)](https://pages.semanticscholar.org/coronavirus-research) recently published by the White House and its research partners. The dataset contains over 51,000 scholarly articles about COVID-19, SARS-CoV-2 and related coronaviruses.
 
+
+![Flow Img](https://github.com/graviraja/covid-comprehension/tree/master/static/flow.png)
+
+Steps performed:
+
+- Rank the documents with paper **abstract** (or) **title** (or) **content** using any of the above mentioned models.
+- Rank the paragraphs of the retrieved documents using any of the above mentioned models.
+- Comprehened the top paragraphs of the retrieved documents using **[`HuggingFace`](https://huggingface.co/)** question-answering pipeline.
+
 Various models already fine-tuned on Natural Language Inference are available to perform the search:
 
 We are using the models provided by **[`gsarti`](https://github.com/gsarti/covid-papers-browser)**  [7] for ranking purposes
@@ -16,13 +25,11 @@ Both models are trained on [SNLI](https://nlp.stanford.edu/projects/snli/) [3] a
 
 For comprehension we finetuned the [CovidBERT](https://huggingface.co/deepset/covid_bert_base) model on [SQuAD](https://rajpurkar.github.io/SQuAD-explorer/) question answering data.
 
-- **[`covid_squad`](https://huggingface.co/graviraja/covid_squad)**, a fine-tuned version of Deepset's [CovidBERT](https://huggingface.co/deepset/covid_bert_base) on SQuAD dataset.
+- **[`covidbert_squad`](https://huggingface.co/graviraja/covidbert_squad)**, a fine-tuned version of Deepset's [CovidBERT](https://huggingface.co/deepset/covid_bert_base) on SQuAD dataset.
 
-Steps performed:
 
-- Rank the documents with paper **abstract** (or) **title** (or) **content** using any of the above mentioned models.
-- Rank the paragraphs of the retrieved documents using any of the above mentioned models.
-- Comprehened the top paragraphs of the retrieved documents using **[`HuggingFace`](https://huggingface.co/)** question-answering pipeline.
+![Model Img](https://github.com/graviraja/covid-comprehension/tree/master/static/model.png)
+
 
 
 ## Setup
