@@ -3,7 +3,7 @@
 **Covid-19 Comprehension** uses state-of-the-art language model to search relevant content and comprehend the documents present inside the [COVID-19 Open Research Dataset (CORD-19)](https://pages.semanticscholar.org/coronavirus-research) recently published by the White House and its research partners. The dataset contains over 51,000 scholarly articles about COVID-19, SARS-CoV-2 and related coronaviruses.
 
 
-![Flow Img](https://github.com/graviraja/covid-comprehension/tree/master/static/flow.png)
+![Flow Img](https://github.com/graviraja/covid-comprehension/blob/master/static/flow.png)
 
 Steps performed:
 
@@ -28,7 +28,7 @@ For comprehension we finetuned the [CovidBERT](https://huggingface.co/deepset/co
 - **[`covidbert_squad`](https://huggingface.co/graviraja/covidbert_squad)**, a fine-tuned version of Deepset's [CovidBERT](https://huggingface.co/deepset/covid_bert_base) on SQuAD dataset.
 
 
-![Model Img](https://github.com/graviraja/covid-comprehension/tree/master/static/model.png)
+![Model Img](https://github.com/graviraja/covid-comprehension/blob/master/static/model.png)
 
 
 
