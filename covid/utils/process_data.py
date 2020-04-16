@@ -157,7 +157,7 @@ def generate_clean_df(all_files, metadata, consider_empty=False, mode="abstract"
                 if 'abstract' in file.keys():
                     mode_data = format_body(file['abstract'])
                 elif 'abstract' in file['metadata'].keys():
-                    mode_data = format_body(file['metadat']['abstract'])
+                    mode_data = format_body(file['metadata']['abstract'])
                 else:
                     mode_not_found += 1
                     continue
