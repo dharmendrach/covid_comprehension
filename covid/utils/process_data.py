@@ -218,8 +218,8 @@ def generate_clean_df(all_files, metadata, mode="abstract"):
         try:
             if 'abstract' in file.keys():
                 abstract = format_body(file['abstract'])
-            elif 'abstract' in file['metadat'].keys():
-                abstract = format_body(file['metadat']['abstract'])
+            elif 'abstract' in file['metadata'].keys():
+                abstract = format_body(file['metadata']['abstract'])
             else:
                 abstract = ''
         except Exception as e:
